@@ -70,6 +70,33 @@ down: ## Teardown the demo environment
 simple: up ## Deploy the "simple" app for curl'ing external APIs
 	kubectl apply -f apps/simple/deployment.yaml
 
+##@ Demo
+
+.PHONY: describe
+describe: ## Describe the app pod
+	@kubectl describe pod/$$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}")
+
+.PHONY: exec
+exec: ## Exec into the app container
+	@kubectl exec -it $$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}") -- /bin/sh
+
+.PHONY: restart
+restart: ## Rollout a restart on the deployment
+	kubectl rollout restart deployment/app-deployment && \
+	kubectl rollout status deployment/app-deployment
+
+.PHONY: init-logs
+init-logs: ## Show the qpoint-init logs
+	@kubectl logs $$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}") -c qtap-init
+
+.PHONY: gateway-logs
+gateway-logs: ## Stream the gateway logs
+	@kubectl logs -f -n qpoint pod/$$(kubectl get pods -l app.kubernetes.io/name=qtap -o jsonpath="{.items[0].metadata.name}" -n qpoint)
+
+.PHONY: operator-logs
+operator-logs: ## Stream the operator logs
+	@kubectl logs -f -n qpoint pod/$$(kubectl get pods -l app.kubernetes.io/name=qtap-operator -o jsonpath="{.items[0].metadata.name}" -n qpoint)
+
 ##@ Dependencies
 
 .PHONY: docker
