@@ -1,6 +1,6 @@
 
-image:
-  tag: "sha-dba8197"
+# image:
+#   tag: "sha-dba8197"
 
 args: 
   - "gateway"
