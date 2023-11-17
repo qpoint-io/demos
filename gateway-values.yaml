@@ -1,0 +1,10 @@
+
+image:
+  tag: "sha-dba8197"
+
+args: 
+  - "gateway"
+  - "--envoy-log-level=error"
+  - "--log-level=info"
+  - "--log-encoding=console"
+  - "--dns-lookup-family=V4_ONLY"

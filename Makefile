@@ -89,6 +89,10 @@ restart: ## Rollout a restart on the deployment
 init-logs: ## Show the qpoint-init logs
 	@kubectl logs $$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}") -c qtap-init
 
+.PHONY: gateway-proxy
+gateway-proxy: ## Establish a port forward proxy
+	@kubectl port-forward -n qpoint $$(kubectl get pods -l app.kubernetes.io/name=qtap -o jsonpath="{.items[0].metadata.name}" -n qpoint) 9901:9901
+
 .PHONY: gateway-logs
 gateway-logs: ## Stream the gateway logs
 	@kubectl logs -f -n qpoint pod/$$(kubectl get pods -l app.kubernetes.io/name=qtap -o jsonpath="{.items[0].metadata.name}" -n qpoint)
