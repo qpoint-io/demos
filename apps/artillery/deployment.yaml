@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artillery-deployment
+  namespace: artillery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: artillery
+  template:
+    metadata:
+      labels:
+        app: artillery
+    spec:
+      containers:
+        - name: artillery
+          image: artillery-image:latest
+          imagePullPolicy: IfNotPresent

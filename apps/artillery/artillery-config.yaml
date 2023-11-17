@@ -1,0 +1,48 @@
+config:
+  target: 'http://qpoint.com'
+  phases:
+    - duration: 300
+      arrivalRate: 2
+
+scenarios:
+  - name: "Google APIs"
+    flow:
+      - get:
+          url: "https://www.googleapis.com/books/v1/volumes?q=flowers"
+      - post:
+          url: "https://www.googleapis.com/books/v1/mylibrary/bookshelves"
+  
+  - name: "Azure APIs"
+    flow:
+      - get:
+          url: "https://management.azure.com/subscriptions?api-version=2020-01-01"
+      - delete:
+          url: "https://management.azure.com/subscriptions/{subscriptionId}?api-version=2020-01-01"
+
+  - name: "Salesforce APIs"
+    flow:
+      - get:
+          url: "https://login.salesforce.com/services/oauth2/authorize"
+      - post:
+          url: "https://yourInstance.salesforce.com/services/data/v20.0/sobjects/Account/"
+
+  - name: "Stripe APIs"
+    flow:
+      - get:
+          url: "https://api.stripe.com/v1/charges"
+      - post:
+          url: "https://api.stripe.com/v1/charges"
+
+  - name: "Square APIs"
+    flow:
+      - get:
+          url: "https://connect.squareup.com/v2/locations"
+      - put:
+          url: "https://connect.squareup.com/v2/inventory/{variation_id}"
+
+  - name: "AWS APIs"
+    flow:
+      - get:
+          url: "https://s3.amazonaws.com"
+      - post:
+          url: "https://sns.us-east-1.amazonaws.com/"

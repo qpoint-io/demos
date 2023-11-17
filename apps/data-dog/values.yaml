@@ -1,0 +1,12 @@
+datadog:
+  kubelet:
+    tlsVerify: false
+  logs:
+    enabled: true
+    containerCollectAll: true
+  clusterName: qpoint-cluster
+  targetSystem: "kubernetes"
+  hostname_trust_uts_namespace: true
+  hostname: qpoint-host
+  apiKey: BLA
+  site: us3.datadoghq.com
