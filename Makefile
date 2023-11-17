@@ -25,10 +25,24 @@ build-images: docker ## Build the app images
 		fi; \
 	done
 
+ensure-images: docker ## Ensure all app images exist, build them if not
+	@for dir in apps/*/; do \
+		if [ -f "$${dir}Dockerfile" ]; then \
+			app_name=$$(basename "$$dir"); \
+			image_name="demo-$$app_name"; \
+			if [ -z "$$(docker images -q $$image_name)" ]; then \
+				echo "Building app image: $$app_name"; \
+				docker build -t "$$image_name" "$$dir"; \
+			else \
+				echo "Image $$image_name already exists"; \
+			fi; \
+		fi; \
+	done
+
 build-node: docker ## Build the docker node image used to bootstrap KinD cluster
 	docker build -t demo-kind-node:latest .
 
-build: build-images build-node ## Build the necessary resources for the environment
+build: build-images ## Build the necessary resources for the environment
 
 ##@ Environment
 
@@ -54,7 +68,7 @@ upload-images: kind ## Upload app images into the cluster
 		fi; \
 	done
 
-up: ensure-deps cluster cert-manager upload-images ## Bring up the demo environment
+up: ensure-deps ensure-images cluster cert-manager upload-images ## Bring up the demo environment
 
 down: ## Teardown the demo environment
 	kind delete cluster --name demo
