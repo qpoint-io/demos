@@ -8,5 +8,5 @@ datadog:
   targetSystem: "kubernetes"
   hostname_trust_uts_namespace: true
   hostname: qpoint-host
-  apiKey: 89fb13468a66e3f6f1f2f622d0fce15d
+  apiKey: bla
   site: us3.datadoghq.com

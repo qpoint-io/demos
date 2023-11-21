@@ -68,34 +68,29 @@ upload-images: kind ## Upload app images into the cluster
 		fi; \
 	done
 
-create-namespaces: kind
+create-namespaces: kind ## Create the namespace for each app in apps directory
 	@for dir in apps/*/; do \
-		if [ -f "$${dir}Dockerfile" ]; then \
-			ns=$$(basename "$$dir"); \
-			kubectl get namespace "$$ns" >/dev/null 2>&1 || kubectl create namespace "$$ns"; \
-		fi; \
+		ns=$$(basename "$$dir"); \
+		kubectl get namespace "$$ns" >/dev/null 2>&1 || kubectl create namespace "$$ns"; \
 	done
 
-
-label-namespaces: kind
+label-namespaces: kind ## Label the namespace for each app in apps directory with qpoint-egress=enabled
 	@for dir in apps/*/; do \
-		if [ -f "$${dir}Dockerfile" ]; then \
-			ns=$$(basename "$$dir"); \
-			if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'enabled'; then \
-				kubectl label namespace "$$ns" qpoint-egress=enabled; \
-			fi; \
+		ns=$$(basename "$$dir"); \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'enabled'; then \
+			kubectl label namespace "$$ns" qpoint-egress=enabled; \
 		fi; \
 	done
-
 
 up: ensure-deps ensure-images cluster cert-manager upload-images create-namespaces label-namespaces ## Bring up the demo environment
 
 down: ## Teardown the demo environment
 	kind delete cluster --name demo
 
-qpoint: kubectl helm ## install qpoint gateway & operator
-	$(eval API_KEY=$(shell read -p "Enter API Key: " api_key; echo $$api_key))
-	$(eval CERT_FILE=qpoint-cert.crt)
+qpoint: ensure-deps ## Install qpoint gateway & operator
+	@echo "Please ensure your Certificate has been placed in qpoint-qtap-ca.crt & Token has been placed in api_token.txt."
+	$(eval API_KEY=$(shell cat api_token.txt))
+	$(eval CERT_FILE=qpoint-qtap-ca.crt)
 
 	@echo "Creating qpoint namespace..."
 	@kubectl create namespace qpoint
@@ -112,17 +107,19 @@ qpoint: kubectl helm ## install qpoint gateway & operator
 	@echo "Creating configmap with certificate..."
 	@kubectl create configmap qpoint-qtap-ca.crt --namespace qpoint --from-file=ca.crt=${CERT_FILE}
 
-
 ##@ Apps
 
 simple: up ## Deploy the "simple" app for curl'ing external APIs
-	kubectl apply -f apps/simple/deployment.yaml
+	@kubectl delete -f apps/simple/deployment.yaml --ignore-not-found
+	@kubectl apply -f apps/simple/deployment.yaml
 
 artillery: up ## Deploy the "artillery" app for hammering multiple APIs
-	kubectl apply -f apps/artillery/deployment.yaml
+	@kubectl delete -f apps/artillery/deployment.yaml --ignore-not-found
+	@kubectl apply -f apps/artillery/deployment.yaml
 
 datadog: up ## Deploy the "datadog" app for reporting to datadog
-	helm install datadog-agent -f apps/datadog/values.yaml datadog/datadog -n datadog
+	@helm uninstall datadog-agent -n datadog --ignore-not-found
+	@helm install datadog-agent -f apps/datadog/values.yaml datadog/datadog -n datadog
 
 ##@ Demo
 
@@ -133,8 +130,8 @@ exec: ## Exec into the app container
 	@kubectl exec -it $$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}") -- /bin/sh
 
 restart: ## Rollout a restart on the deployment
-	kubectl rollout restart deployment/app-deployment && \
-	kubectl rollout status deployment/app-deployment
+	@kubectl rollout restart deployment/app-deployment && \
+	@kubectl rollout status deployment/app-deployment
 
 init-logs: ## Show the qpoint-init logs
 	@kubectl logs $$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}") -c qtap-init
