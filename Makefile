@@ -68,7 +68,12 @@ upload-images: kind ## Upload app images into the cluster
 		fi; \
 	done
 
-up: ensure-deps ensure-images cluster cert-manager upload-images ## Bring up the demo environment
+create-namespaces: kind
+	@for ns in artillery datadog simple; do \
+		kubectl get namespace $$ns >/dev/null 2>&1 || kubectl create namespace $$ns; \
+	done
+
+up: ensure-deps ensure-images cluster cert-manager upload-images create-namespaces ## Bring up the demo environment
 
 down: ## Teardown the demo environment
 	kind delete cluster --name demo
