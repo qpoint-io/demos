@@ -49,7 +49,7 @@ build: build-images ## Build the necessary resources for the environment
 cluster: kind ## Create the KinD cluster to run demo scenarios
 	@kind get clusters | grep -qw "^demo$$" || kind create cluster --config kind-config.yaml --name demo
 
-cert-manager: ## Install cert-manager on the KinD cluster 
+cert-manager: ## Install cert-manager on the KinD cluster
 	@echo "Installing cert-manager..." && \
 	(helm repo list | grep -qw "jetstack" || \
 		(helm repo add jetstack https://charts.jetstack.io && helm repo update)) && \
@@ -81,8 +81,8 @@ simple: up ## Deploy the "simple" app for curl'ing external APIs
 artillery: up ## Deploy the "artillery" app for hammering multiple APIs
 	kubectl apply -f apps/artillery/deployment.yaml
 
-data-dog: up ## Deploy the "data-dog" app for reporting to datadog
-	helm install datadog-agent -f apps/data-dog/values.yaml datadog/datadog -n datadog
+datadog: up ## Deploy the "datadog" app for reporting to datadog
+	helm install datadog-agent -f apps/datadog/values.yaml datadog/datadog -n datadog
 
 ##@ Demo
 
