@@ -12,8 +12,6 @@ spec:
     metadata:
       labels:
         app: artillery
-      annotations:
-        qpoint.io/egress: "enabled"
     spec:
       containers:
         - name: artillery
