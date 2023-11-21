@@ -73,6 +73,26 @@ up: ensure-deps ensure-images cluster cert-manager upload-images ## Bring up the
 down: ## Teardown the demo environment
 	kind delete cluster --name demo
 
+qpoint: kubectl helm ## install qpoint gateway & operator
+	$(eval API_KEY=$(shell read -p "Enter API Key: " api_key; echo $$api_key))
+	$(eval CERT=$(shell read -p "Enter Certificate: " cert; echo $$cert))
+
+	@echo "Creating qpoint namespace..."
+	@kubectl create namespace qpoint
+
+	@echo "Creating secret with API key..."
+	@kubectl create secret generic token --namespace qpoint --from-literal=token="${API_KEY}"
+
+	@echo "Installing qtap-gateway..."
+	@helm install qtap-gateway qpoint/qtap --namespace qpoint -f gateway-values.yaml
+
+	@echo "Installing qtap-operator..."
+	@helm install qtap-operator qpoint/qtap-operator --namespace qpoint
+
+	@echo "Creating configmap with certificate..."
+	@kubectl create configmap qpoint-qtap-ca.crt --namespace qpoint --from-literal=ca.crt="${CERT}"
+
+
 ##@ Apps
 
 simple: up ## Deploy the "simple" app for curl'ing external APIs
