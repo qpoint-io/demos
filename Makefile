@@ -69,11 +69,26 @@ upload-images: kind ## Upload app images into the cluster
 	done
 
 create-namespaces: kind
-	@for ns in artillery datadog simple; do \
-		kubectl get namespace $$ns >/dev/null 2>&1 || kubectl create namespace $$ns; \
+	@for dir in apps/*/; do \
+		if [ -f "$${dir}Dockerfile" ]; then \
+			ns=$$(basename "$$dir"); \
+			kubectl get namespace "$$ns" >/dev/null 2>&1 || kubectl create namespace "$$ns"; \
+		fi; \
 	done
 
-up: ensure-deps ensure-images cluster cert-manager upload-images create-namespaces ## Bring up the demo environment
+
+label-namespaces: kind
+	@for dir in apps/*/; do \
+		if [ -f "$${dir}Dockerfile" ]; then \
+			ns=$$(basename "$$dir"); \
+			if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'enabled'; then \
+				kubectl label namespace "$$ns" qpoint-egress=enabled; \
+			fi; \
+		fi; \
+	done
+
+
+up: ensure-deps ensure-images cluster cert-manager upload-images create-namespaces label-namespaces ## Bring up the demo environment
 
 down: ## Teardown the demo environment
 	kind delete cluster --name demo
