@@ -1,7 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+<<<<<<< HEAD
   name: app-deployment
+=======
+  name: simple
+  namespace: simple
+>>>>>>> 5734e33 (Update namespace and deployment names)
 spec:
   replicas: 1
   selector:
