@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         app: app
+      annotations:
+        qpoint.io/egress: "enabled"
     spec:
       containers:
       - name: app

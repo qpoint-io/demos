@@ -75,7 +75,7 @@ down: ## Teardown the demo environment
 
 qpoint: kubectl helm ## install qpoint gateway & operator
 	$(eval API_KEY=$(shell read -p "Enter API Key: " api_key; echo $$api_key))
-	$(eval CERT=$(shell read -p "Enter Certificate: " cert; echo $$cert))
+	$(eval CERT_FILE=qpoint-cert.crt)
 
 	@echo "Creating qpoint namespace..."
 	@kubectl create namespace qpoint
@@ -90,7 +90,7 @@ qpoint: kubectl helm ## install qpoint gateway & operator
 	@helm install qtap-operator qpoint/qtap-operator --namespace qpoint
 
 	@echo "Creating configmap with certificate..."
-	@kubectl create configmap qpoint-qtap-ca.crt --namespace qpoint --from-literal=ca.crt="${CERT}"
+	@kubectl create configmap qpoint-qtap-ca.crt --namespace qpoint --from-file=ca.crt=${CERT_FILE}
 
 
 ##@ Apps
