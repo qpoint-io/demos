@@ -92,6 +92,12 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 	$(eval API_KEY=$(shell cat api_token.txt))
 	$(eval CERT_FILE=qpoint-qtap-ca.crt)
 
+	@echo "Adding helm repo..."
+	@helm repo add qpoint htts://qpoint-io.github.io/helm-charts/
+	
+	@echo "Updating helm repo..."
+	@helm repo update
+	
 	@echo "Creating qpoint namespace..."
 	@kubectl create namespace qpoint
 
@@ -119,7 +125,15 @@ artillery: up ## Deploy the "artillery" app for hammering multiple APIs
 
 datadog: up ## Deploy the "datadog" app for reporting to datadog
 	@helm uninstall datadog-agent -n datadog --ignore-not-found
+	@helm repo add datadog https://helm.datadoghq.com
+	@helm repo update
 	@helm install datadog-agent -f apps/datadog/values.yaml datadog/datadog -n datadog
+
+newrelic: up ## Deploy the "newrelic" app for reporting to newrelic
+	@helm uninstall newrelic -n newrelic --ignore-not-found
+	@helm repo add newrelic https://helm-charts.newrelic.com
+	@helm repo update
+	@helm install newrelic-bundle newrelic/nri-bundle -f apps/newrelic/values.yaml -n newrelic
 
 ##@ Demo
 
