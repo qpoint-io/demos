@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: artillery-deployment
+  name: artillery
   namespace: artillery
 spec:
   replicas: 1
