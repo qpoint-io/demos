@@ -14,10 +14,6 @@ kube-state-metrics:
 kubeEvents:
   enabled: true
 
-newrelic-prometheus-agent:
-  enabled: true
-  lowDataMode: true
-  config:
-    kubernetes:
-      integrations_filter:
-        enabled: false
+nri-metadata-injection:
+  podAnnotations:
+    qpoint.io/egress: disabled
