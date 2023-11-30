@@ -94,10 +94,10 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 
 	@echo "Adding helm repo..."
 	@helm repo add qpoint htts://qpoint-io.github.io/helm-charts/
-	
+
 	@echo "Updating helm repo..."
 	@helm repo update
-	
+
 	@echo "Creating qpoint namespace..."
 	@kubectl create namespace qpoint
 

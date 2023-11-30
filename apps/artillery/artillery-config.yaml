@@ -11,7 +11,7 @@ scenarios:
           url: "https://www.googleapis.com/books/v1/volumes?q=flowers"
       - post:
           url: "https://www.googleapis.com/books/v1/mylibrary/bookshelves"
-  
+
   - name: "Azure APIs"
     flow:
       - get:
