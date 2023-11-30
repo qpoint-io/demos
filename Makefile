@@ -138,17 +138,24 @@ newrelic: up ## Deploy the "newrelic" app for reporting to newrelic
 ##@ Demo
 
 describe: ## Describe the app pod
-	@kubectl describe pod/$$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}")
+	@namespace=$$(kubectl config view --minify --output 'jsonpath={..namespace}'); \
+	pod_name=$$(kubectl get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
+	kubectl describe pod/$$pod_name -n $$namespace
 
 exec: ## Exec into the app container
-	@kubectl exec -it $$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}") -- /bin/sh
+	@namespace=$$(kubectl config view --minify --output 'jsonpath={..namespace}'); \
+	pod_name=$$(kubectl get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
+	kubectl exec -it $$pod_name -- /bin/sh
 
 restart: ## Rollout a restart on the deployment
-	@kubectl rollout restart deployment/app-deployment && \
-	@kubectl rollout status deployment/app-deployment
+	@namespace=$$(kubectl config view --minify --output 'jsonpath={..namespace}'); \
+	kubectl rollout restart deployment/$$namespace && \
+	kubectl rollout status deployment/$$namespace
 
 init-logs: ## Show the qpoint-init logs
-	@kubectl logs $$(kubectl get pods -l app=app -o jsonpath="{.items[0].metadata.name}") -c qtap-init
+	@namespace=$$(kubectl config view --minify --output 'jsonpath={..namespace}'); \
+	pod_name=$$(kubectl get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
+	kubectl logs $$pod_name -c qtap-init
 
 gateway-proxy: ## Establish a port forward proxy
 	@kubectl port-forward -n qpoint $$(kubectl get pods -l app.kubernetes.io/name=qtap -o jsonpath="{.items[0].metadata.name}" -n qpoint) 9901:9901

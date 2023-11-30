@@ -7,13 +7,13 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app: simple
   template:
     metadata:
       labels:
-        app: app
+        app: simple
     spec:
       containers:
-      - name: app
+      - name: simple
         image: demo-simple
         imagePullPolicy: Never
