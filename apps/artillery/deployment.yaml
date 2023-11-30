@@ -15,5 +15,5 @@ spec:
     spec:
       containers:
         - name: artillery
-          image: artillery-image:latest
+          image: demo-artillery:latest
           imagePullPolicy: IfNotPresent
