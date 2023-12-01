@@ -74,7 +74,7 @@ create-namespaces: kind ## Create the namespace for each app in apps directory
 		kubectl get namespace "$$ns" >/dev/null 2>&1 || kubectl create namespace "$$ns"; \
 	done
 
-label-namespaces: kind ## Label the namespace for each app in apps directory with qpoint-egress=enabled
+label-namespaces-egress: kind ## Label the namespace for each app in apps directory with qpoint-egress=enabled
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'enabled'; then \
@@ -82,7 +82,15 @@ label-namespaces: kind ## Label the namespace for each app in apps directory wit
 		fi; \
 	done
 
-up: ensure-deps ensure-images cluster cert-manager upload-images create-namespaces label-namespaces ## Bring up the demo environment
+label-namespaces-injection: kind ## Label the namespace for each app in apps directory with qpoint-injection=enabled
+	@for dir in apps/*/; do \
+		ns=$$(basename "$$dir"); \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-injection}' | grep -q 'enabled'; then \
+			kubectl label namespace "$$ns" qpoint-injection=enabled; \
+		fi; \
+	done
+
+up: ensure-deps ensure-images cluster cert-manager upload-images create-namespaces ## Bring up the demo environment
 
 down: ## Teardown the demo environment
 	kind delete cluster --name demo
