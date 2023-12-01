@@ -1,4 +1,4 @@
-controllerManager:
-  manager:
-    image:
-      tag: "sha-011a40b"
+# controllerManager:
+#   manager:
+#     image:
+#       tag: "sha-011a40b"
