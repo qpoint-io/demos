@@ -1,6 +1,7 @@
 FROM ubuntu:latest
 
 RUN apt-get update
-RUN apt-get -y install curl
+RUN apt-get -y install curl tini
 
 CMD ["sleep", "infinity"]
+ENTRYPOINT ["tini", "--"]

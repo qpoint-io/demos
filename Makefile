@@ -74,19 +74,27 @@ create-namespaces: kind ## Create the namespace for each app in apps directory
 		kubectl get namespace "$$ns" >/dev/null 2>&1 || kubectl create namespace "$$ns"; \
 	done
 
-label-namespaces-egress: kind ## Label the namespace for each app in apps directory with qpoint-egress=enabled
+label-namespaces-egress-service: kind ## Label the namespace for each app in apps directory with qpoint-egress=enabled
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'enabled'; then \
-			kubectl label namespace "$$ns" qpoint-egress=enabled; \
+			kubectl label namespace "$$ns" qpoint-egress=service --overwrite; \
 		fi; \
 	done
 
-label-namespaces-injection: kind ## Label the namespace for each app in apps directory with qpoint-injection=enabled
+label-namespaces-egress-inject: kind ## Label the namespace for each app in apps directory with qpoint-injection=enabled
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-injection}' | grep -q 'enabled'; then \
-			kubectl label namespace "$$ns" qpoint-injection=enabled; \
+			kubectl label namespace "$$ns" qpoint-egress=inject --overwrite; \
+		fi; \
+	done
+
+label-namespaces-egress-disable: kind ## Label the namespace for each app in apps directory with qpoint-injection=enabled
+	@for dir in apps/*/; do \
+		ns=$$(basename "$$dir"); \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-injection}' | grep -q 'enabled'; then \
+			kubectl label namespace "$$ns" qpoint-egress=disable --overwrite; \
 		fi; \
 	done
 
