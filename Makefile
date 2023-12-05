@@ -146,7 +146,7 @@ datadog: up ## Deploy the "datadog" app for reporting to datadog
 	@helm install datadog-agent -f apps/datadog/values.yaml datadog/datadog -n datadog
 
 newrelic: up ## Deploy the "newrelic" app for reporting to newrelic
-	@helm uninstall newrelic -n newrelic --ignore-not-found
+	@helm uninstall newrelic-bundle -n newrelic --ignore-not-found
 	@helm repo add newrelic https://helm-charts.newrelic.com
 	@helm repo update
 	@helm install newrelic-bundle newrelic/nri-bundle -f apps/newrelic/values.yaml -n newrelic

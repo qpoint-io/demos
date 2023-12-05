@@ -1,7 +1,7 @@
 global:
   licenseKey: "bla"
   cluster: "demo"
-  lowDataMode: true
+  lowDataMode: false
 
 newrelic-infrastructure:
   privileged: true
@@ -15,5 +15,5 @@ kubeEvents:
   enabled: true
 
 nri-metadata-injection:
-  podAnnotations:
-    qpoint.io/egress: disabled
+  labels:
+    qpoint.io/egress: disable
