@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-fedora
+  namespace: simple-fedora
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-fedora
+  template:
+    metadata:
+      labels:
+        app: simple-fedora
+    spec:
+      containers:
+      - name: simple
+        image: demo-simple-fedora
+        imagePullPolicy: Never

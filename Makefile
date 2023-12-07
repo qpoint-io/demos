@@ -74,26 +74,26 @@ create-namespaces: kind ## Create the namespace for each app in apps directory
 		kubectl get namespace "$$ns" >/dev/null 2>&1 || kubectl create namespace "$$ns"; \
 	done
 
-label-namespaces-egress-service: kind ## Label the namespace for each app in apps directory with qpoint-egress=enabled
+label-namespaces-egress-service: kind ## Label the namespace for each app in apps directory with qpoint-egress=service
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'enabled'; then \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'service'; then \
 			kubectl label namespace "$$ns" qpoint-egress=service --overwrite; \
 		fi; \
 	done
 
-label-namespaces-egress-inject: kind ## Label the namespace for each app in apps directory with qpoint-injection=enabled
+label-namespaces-egress-inject: kind ## Label the namespace for each app in apps directory with qpoint-egress=inject
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-injection}' | grep -q 'enabled'; then \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'inject'; then \
 			kubectl label namespace "$$ns" qpoint-egress=inject --overwrite; \
 		fi; \
 	done
 
-label-namespaces-egress-disable: kind ## Label the namespace for each app in apps directory with qpoint-injection=enabled
+label-namespaces-egress-disable: kind ## Label the namespace for each app in apps directory with qpoint-egress=disable
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-injection}' | grep -q 'enabled'; then \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'disable'; then \
 			kubectl label namespace "$$ns" qpoint-egress=disable --overwrite; \
 		fi; \
 	done
@@ -131,9 +131,17 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 
 ##@ Apps
 
-simple: up ## Deploy the "simple" app for curl'ing external APIs
-	@kubectl delete -f apps/simple/deployment.yaml --ignore-not-found
-	@kubectl apply -f apps/simple/deployment.yaml
+simple-alpine: up ## Deploy the "simple-alpine" app for curl'ing external APIs
+	@kubectl delete -f apps/simple-alpine/deployment.yaml --ignore-not-found
+	@kubectl apply -f apps/simple-alpine/deployment.yaml
+
+simple-fedora: up ## Deploy the "simple-fedora" app for curl'ing external APIs
+	@kubectl delete -f apps/simple-fedora/deployment.yaml --ignore-not-found
+	@kubectl apply -f apps/simple-fedora/deployment.yaml
+
+simple-ubuntu: up ## Deploy the "simple-ubuntu" app for curl'ing external APIs
+	@kubectl delete -f apps/simple-ubuntu/deployment.yaml --ignore-not-found
+	@kubectl apply -f apps/simple-ubuntu/deployment.yaml
 
 artillery: up ## Deploy the "artillery" app for hammering multiple APIs
 	@kubectl delete -f apps/artillery/deployment.yaml --ignore-not-found

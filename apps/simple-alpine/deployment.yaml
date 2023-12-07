@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simple
-  namespace: simple
+  name: simple-alpine
+  namespace: simple-alpine
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: simple
+      app: simple-alpine
   template:
     metadata:
       labels:
-        app: simple
+        app: simple-alpine
     spec:
       containers:
       - name: simple
-        image: demo-simple
+        image: demo-simple-alpine
         imagePullPolicy: Never
