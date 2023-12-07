@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simple-ubuntu
-  namespace: simple-ubuntu
+  name: simple
+  namespace: simple
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: simple-ubuntu
+      app: simple
   template:
     metadata:
       labels:
-        app: simple-ubuntu
+        app: simple
     spec:
       containers:
       - name: simple
-        image: demo-simple-ubuntu
+        image: demo-simple
         imagePullPolicy: Never

@@ -139,9 +139,9 @@ simple-fedora: up ## Deploy the "simple-fedora" app for curl'ing external APIs
 	@kubectl delete -f apps/simple-fedora/deployment.yaml --ignore-not-found
 	@kubectl apply -f apps/simple-fedora/deployment.yaml
 
-simple-ubuntu: up ## Deploy the "simple-ubuntu" app for curl'ing external APIs
-	@kubectl delete -f apps/simple-ubuntu/deployment.yaml --ignore-not-found
-	@kubectl apply -f apps/simple-ubuntu/deployment.yaml
+simple: up ## Deploy the "simple" app for curl'ing external APIs
+	@kubectl delete -f apps/simple/deployment.yaml --ignore-not-found
+	@kubectl apply -f apps/simple/deployment.yaml
 
 artillery: up ## Deploy the "artillery" app for hammering multiple APIs
 	@kubectl delete -f apps/artillery/deployment.yaml --ignore-not-found
