@@ -1,3 +1,6 @@
+# suppress change directory warnings
+MAKEFLAGS += --no-print-directory
+
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
