@@ -184,16 +184,32 @@ operator-logs: ## Stream the operator logs
 
 ##@ Dependencies
 
+## Location to install dependencies into
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+# Binaries
+KUBECTL ?= $(LOCALBIN)/kubectl
+KIND ?= $(LOCALBIN)/kind
+HELM ?= $(LOCALBIN)/helm
+
 docker: ## Ensure docker is installed and running
 	@docker info > /dev/null 2>&1 || (echo "Error: Docker must be installed and running" && exit 1 )
 
-kubectl: ## Ensure kubectl is installed
-	@which kubectl > /dev/null 2>&1 || (echo "Error: Kubectl must be installed" && exit 1)
+kubectl: $(KUBECTL) ## Ensure kubectl is installed
+$(KUBECTL): $(LOCALBIN)
+	@test -s $(LOCALBIN)/kubectl || ./install.sh kubectl
 
-kind: ## Ensure kind is installed
-	@which kind > /dev/null 2>&1 || (echo "Error: KinD must be installed" && exit 1)
+kind: $(KIND) ## Ensure kind is installed
+$(KIND): $(LOCALBIN)
+	@test -s $(LOCALBIN)/kind || ./install.sh kind
 
-helm: ## Ensure helm is installed
-	@which kind > /dev/null 2>&1 || (echo "Error: Helm must be installed" && exit 1)
+helm: $(HELM) ## Ensure helm is installed
+$(HELM): $(LOCALBIN)
+	@test -s $(LOCALBIN)/helm || ./install.sh helm
+
+install: # Install all necessary dependencies
+	@./install.sh
 
 ensure-deps: docker kubectl kind helm ## Ensure all dependencies are ready
