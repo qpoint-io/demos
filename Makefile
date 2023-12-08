@@ -47,14 +47,14 @@ build: build-images ## Build the necessary resources for the environment
 ##@ Environment
 
 cluster: kind ## Create the KinD cluster to run demo scenarios
-	@kind get clusters | grep -qw "^demo$$" || kind create cluster --config kind-config.yaml --name demo
+	@$(KIND) get clusters | grep -qw "^demo$$" || $(KIND) create cluster --config kind-config.yaml --name demo
 
 cert-manager: ## Install cert-manager on the KinD cluster
 	@echo "Installing cert-manager..." && \
-	(helm repo list | grep -qw "jetstack" || \
-		(helm repo add jetstack https://charts.jetstack.io && helm repo update)) && \
-	(kubectl get namespaces | grep -qw "cert-manager" || \
-		helm install \
+	($(HELM) repo list | grep -qw "jetstack" || \
+		($(HELM) repo add jetstack https://charts.jetstack.io && $(HELM) repo update)) && \
+	($(KUBECTL) get namespaces | grep -qw "cert-manager" || \
+		$(HELM) install \
 		cert-manager jetstack/cert-manager \
 		--namespace cert-manager \
 		--create-namespace \
@@ -64,38 +64,38 @@ upload-images: kind ## Upload app images into the cluster
 	@for dir in apps/*/; do \
 		if [ -f "$${dir}Dockerfile" ]; then \
 			app_name=$$(basename "$$dir"); \
-			kind load docker-image "demo-$${app_name}:latest" --name demo; \
+			$(KIND) load docker-image "demo-$${app_name}:latest" --name demo; \
 		fi; \
 	done
 
 label-namespaces-egress-service: kind ## Label the namespace for each app in apps directory with qpoint-egress=service
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'service'; then \
-			kubectl label namespace "$$ns" qpoint-egress=service --overwrite; \
+		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'service'; then \
+			$(KUBECTL) label namespace "$$ns" qpoint-egress=service --overwrite; \
 		fi; \
 	done
 
 label-namespaces-egress-inject: kind ## Label the namespace for each app in apps directory with qpoint-egress=inject
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'inject'; then \
-			kubectl label namespace "$$ns" qpoint-egress=inject --overwrite; \
+		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'inject'; then \
+			$(KUBECTL) label namespace "$$ns" qpoint-egress=inject --overwrite; \
 		fi; \
 	done
 
 label-namespaces-egress-disable: kind ## Label the namespace for each app in apps directory with qpoint-egress=disable
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'disable'; then \
-			kubectl label namespace "$$ns" qpoint-egress=disable --overwrite; \
+		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'disable'; then \
+			$(KUBECTL) label namespace "$$ns" qpoint-egress=disable --overwrite; \
 		fi; \
 	done
 
 up: ensure-deps ensure-images cluster cert-manager upload-images ## Bring up the demo environment
 
 down: ## Teardown the demo environment
-	kind delete cluster --name demo
+	$(KIND) delete cluster --name demo
 
 qpoint: ensure-deps ## Install qpoint gateway & operator
 	@echo "Please ensure your Certificate has been placed in qpoint-qtap-ca.crt & Token has been placed in api_token.txt."
@@ -103,25 +103,25 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 	$(eval CERT_FILE=qpoint-qtap-ca.crt)
 
 	@echo "Adding helm repo..."
-	@helm repo add qpoint htts://qpoint-io.github.io/helm-charts/
+	@$(HELM) repo add qpoint htts://qpoint-io.github.io/helm-charts/
 
 	@echo "Updating helm repo..."
-	@helm repo update
+	@$(HELM) repo update
 
 	@echo "Creating qpoint namespace..."
-	@kubectl create namespace qpoint
+	@$(KUBECTL) create namespace qpoint
 
 	@echo "Creating secret with API key..."
-	@kubectl create secret generic token --namespace qpoint --from-literal=token="${API_KEY}"
+	@$(KUBECTL) create secret generic token --namespace qpoint --from-literal=token="${API_KEY}"
 
 	@echo "Installing qtap-gateway..."
-	@helm install qtap-gateway qpoint/qtap --namespace qpoint -f gateway-values.yaml
+	@$(HELM) install qtap-gateway qpoint/qtap --namespace qpoint -f gateway-values.yaml
 
 	@echo "Installing qtap-operator..."
-	@helm install qtap-operator qpoint/qtap-operator --namespace qpoint
+	@$(HELM) install qtap-operator qpoint/qtap-operator --namespace qpoint
 
 	@echo "Creating configmap with certificate..."
-	@kubectl create configmap qpoint-qtap-ca.crt --namespace qpoint --from-file=ca.crt=${CERT_FILE}
+	@$(KUBECTL) create configmap qpoint-qtap-ca.crt --namespace qpoint --from-file=ca.crt=${CERT_FILE}
 
 ##@ Apps
 
@@ -144,45 +144,45 @@ ensure-image: ## Rule to ensure the Docker image exists for app
 	fi
 
 ensure-namespace: ## Create the namespace for app
-	kubectl get namespace "$(APP)" >/dev/null 2>&1 || kubectl create namespace "$(APP)";
+	$(KUBECTL) get namespace "$(APP)" >/dev/null 2>&1 || $(KUBECTL) create namespace "$(APP)";
 
 upload-image: ## Upload app image into the cluster
 	dir=apps/$(APP)
 	if [ -f "$${dir}/Dockerfile" ]; then \
 		image_name="demo-$(APP)"; \
-		kind load docker-image "$$image_name:latest" --name demo; \
+		$(KIND) load docker-image "$$image_name:latest" --name demo; \
 	fi;
 
 ##@ Demo
 
 describe: ## Describe the app pod
-	@namespace=$$(kubectl config view --minify --output 'jsonpath={..namespace}'); \
-	pod_name=$$(kubectl get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
-	kubectl describe pod/$$pod_name -n $$namespace
+	@namespace=$$($(KUBECTL) config view --minify --output 'jsonpath={..namespace}'); \
+	pod_name=$$($(KUBECTL) get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
+	$(KUBECTL) describe pod/$$pod_name -n $$namespace
 
 exec: ## Exec into the app container
-	@namespace=$$(kubectl config view --minify --output 'jsonpath={..namespace}'); \
-	pod_name=$$(kubectl get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
-	kubectl exec -it $$pod_name -- /bin/sh
+	@namespace=$$($(KUBECTL) config view --minify --output 'jsonpath={..namespace}'); \
+	pod_name=$$($(KUBECTL) get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
+	$(KUBECTL) exec -it $$pod_name -- /bin/sh
 
 restart: ## Rollout a restart on the deployment
-	@namespace=$$(kubectl config view --minify --output 'jsonpath={..namespace}'); \
-	kubectl rollout restart deployment/$$namespace && \
-	kubectl rollout status deployment/$$namespace
+	@namespace=$$($(KUBECTL) config view --minify --output 'jsonpath={..namespace}'); \
+	$(KUBECTL) rollout restart deployment/$$namespace && \
+	$(KUBECTL) rollout status deployment/$$namespace
 
 init-logs: ## Show the qpoint-init logs
-	@namespace=$$(kubectl config view --minify --output 'jsonpath={..namespace}'); \
-	pod_name=$$(kubectl get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
-	kubectl logs $$pod_name -c qtap-init
+	@namespace=$$($(KUBECTL) config view --minify --output 'jsonpath={..namespace}'); \
+	pod_name=$$($(KUBECTL) get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
+	$(KUBECTL) logs $$pod_name -c qtap-init
 
 gateway-proxy: ## Establish a port forward proxy
-	@kubectl port-forward -n qpoint $$(kubectl get pods -l app.kubernetes.io/name=qtap -o jsonpath="{.items[0].metadata.name}" -n qpoint) 9901:9901
+	@$(KUBECTL) port-forward -n qpoint $$($(KUBECTL) get pods -l app.kubernetes.io/name=qtap -o jsonpath="{.items[0].metadata.name}" -n qpoint) 9901:9901
 
 gateway-logs: ## Stream the gateway logs
-	@kubectl logs -f -n qpoint pod/$$(kubectl get pods -l app.kubernetes.io/name=qtap -o jsonpath="{.items[0].metadata.name}" -n qpoint)
+	@$(KUBECTL) logs -f -n qpoint pod/$$($(KUBECTL) get pods -l app.kubernetes.io/name=qtap -o jsonpath="{.items[0].metadata.name}" -n qpoint)
 
 operator-logs: ## Stream the operator logs
-	@kubectl logs -f -n qpoint pod/$$(kubectl get pods -l app.kubernetes.io/name=qtap-operator -o jsonpath="{.items[0].metadata.name}" -n qpoint)
+	@$(KUBECTL) logs -f -n qpoint pod/$$($(KUBECTL) get pods -l app.kubernetes.io/name=qtap-operator -o jsonpath="{.items[0].metadata.name}" -n qpoint)
 
 ##@ Dependencies
 
