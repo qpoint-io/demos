@@ -126,13 +126,13 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 ##@ Apps
 
 %-app: ensure-deps cluster cert-manager ## Pattern rule for applications
-	@$(MAKE) ensure-image APP=$* > /dev/null
-	@$(MAKE) ensure-namespace APP=$* > /dev/null
-	@$(MAKE) upload-image APP=$* > /dev/null
+	@$(MAKE) ensure-image APP=$* 
+	@$(MAKE) ensure-namespace APP=$* 
+	@$(MAKE) upload-image APP=$* 
 	apps/$*/init.sh apps/$*
 
 ensure-image: ## Rule to ensure the Docker image exists for app
-	dir=apps/$(APP)
+	@dir=apps/$(APP); \
 	if [ -f "$$dir/Dockerfile" ]; then \
 		image_name="demo-$(APP)"; \
 		if [ -z "$$(docker images -q $$image_name)" ]; then \
@@ -144,10 +144,10 @@ ensure-image: ## Rule to ensure the Docker image exists for app
 	fi
 
 ensure-namespace: ## Create the namespace for app
-	$(KUBECTL) get namespace "$(APP)" >/dev/null 2>&1 || $(KUBECTL) create namespace "$(APP)";
+	@$(KUBECTL) get namespace "$(APP)" >/dev/null 2>&1 || $(KUBECTL) create namespace "$(APP)";
 
 upload-image: ## Upload app image into the cluster
-	dir=apps/$(APP)
+	@dir=apps/$(APP); \
 	if [ -f "$${dir}/Dockerfile" ]; then \
 		image_name="demo-$(APP)"; \
 		$(KIND) load docker-image "$$image_name:latest" --name demo; \
