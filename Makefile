@@ -68,37 +68,31 @@ upload-images: kind ## Upload app images into the cluster
 		fi; \
 	done
 
-create-namespaces: kind ## Create the namespace for each app in apps directory
+label-namespaces-egress-service: kind ## Label the namespace for each app in apps directory with qpoint-egress=service
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		kubectl get namespace "$$ns" >/dev/null 2>&1 || kubectl create namespace "$$ns"; \
-	done
-
-label-namespaces-egress-service: kind ## Label the namespace for each app in apps directory with qpoint-egress=enabled
-	@for dir in apps/*/; do \
-		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'enabled'; then \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'service'; then \
 			kubectl label namespace "$$ns" qpoint-egress=service --overwrite; \
 		fi; \
 	done
 
-label-namespaces-egress-inject: kind ## Label the namespace for each app in apps directory with qpoint-injection=enabled
+label-namespaces-egress-inject: kind ## Label the namespace for each app in apps directory with qpoint-egress=inject
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-injection}' | grep -q 'enabled'; then \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'inject'; then \
 			kubectl label namespace "$$ns" qpoint-egress=inject --overwrite; \
 		fi; \
 	done
 
-label-namespaces-egress-disable: kind ## Label the namespace for each app in apps directory with qpoint-injection=enabled
+label-namespaces-egress-disable: kind ## Label the namespace for each app in apps directory with qpoint-egress=disable
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
-		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-injection}' | grep -q 'enabled'; then \
+		if ! kubectl get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'disable'; then \
 			kubectl label namespace "$$ns" qpoint-egress=disable --overwrite; \
 		fi; \
 	done
 
-up: ensure-deps ensure-images cluster cert-manager upload-images create-namespaces ## Bring up the demo environment
+up: ensure-deps ensure-images cluster cert-manager upload-images ## Bring up the demo environment
 
 down: ## Teardown the demo environment
 	kind delete cluster --name demo
@@ -131,25 +125,33 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 
 ##@ Apps
 
-simple: up ## Deploy the "simple" app for curl'ing external APIs
-	@kubectl delete -f apps/simple/deployment.yaml --ignore-not-found
-	@kubectl apply -f apps/simple/deployment.yaml
+%-app: ensure-deps cluster cert-manager ## Pattern rule for applications
+	@$(MAKE) ensure-image APP=$* > /dev/null
+	@$(MAKE) ensure-namespace APP=$* > /dev/null
+	@$(MAKE) upload-image APP=$* > /dev/null
+	apps/$*/init.sh apps/$*
 
-artillery: up ## Deploy the "artillery" app for hammering multiple APIs
-	@kubectl delete -f apps/artillery/deployment.yaml --ignore-not-found
-	@kubectl apply -f apps/artillery/deployment.yaml
+ensure-image: ## Rule to ensure the Docker image exists for app
+	dir=apps/$(APP)
+	if [ -f "$$dir/Dockerfile" ]; then \
+		image_name="demo-$(APP)"; \
+		if [ -z "$$(docker images -q $$image_name)" ]; then \
+			echo "Building app image: $$image_name"; \
+			docker build -t "$$image_name" "$$dir"; \
+		else \
+			echo "Image $$image_name already exists"; \
+		fi; \
+	fi
 
-datadog: up ## Deploy the "datadog" app for reporting to datadog
-	@helm uninstall datadog-agent -n datadog --ignore-not-found
-	@helm repo add datadog https://helm.datadoghq.com
-	@helm repo update
-	@helm install datadog-agent -f apps/datadog/values.yaml datadog/datadog -n datadog
+ensure-namespace: ## Create the namespace for app
+	kubectl get namespace "$(APP)" >/dev/null 2>&1 || kubectl create namespace "$(APP)";
 
-newrelic: up ## Deploy the "newrelic" app for reporting to newrelic
-	@helm uninstall newrelic-bundle -n newrelic --ignore-not-found
-	@helm repo add newrelic https://helm-charts.newrelic.com
-	@helm repo update
-	@helm install newrelic-bundle newrelic/nri-bundle -f apps/newrelic/values.yaml -n newrelic
+upload-image: ## Upload app image into the cluster
+	dir=apps/$(APP)
+	if [ -f "$${dir}/Dockerfile" ]; then \
+		image_name="demo-$(APP)"; \
+		kind load docker-image "$$image_name:latest" --name demo; \
+	fi;
 
 ##@ Demo
 
