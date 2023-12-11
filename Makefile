@@ -134,6 +134,14 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 	@$(MAKE) upload-image APP=$* 
 	apps/$*/init.sh apps/$*
 
+list-apps:
+	@for dir in apps/*/; do \
+		if [ -d "$$dir" ]; then \
+			app_name=$$(basename "$$dir"); \
+			echo "$$app_name"; \
+		fi; \
+	done
+
 ensure-image: ## Rule to ensure the Docker image exists for app
 	@dir=apps/$(APP); \
 	if [ -f "$$dir/Dockerfile" ]; then \
