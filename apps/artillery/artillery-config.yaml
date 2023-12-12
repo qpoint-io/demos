@@ -3,6 +3,8 @@ config:
   phases:
     - duration: 300
       arrivalRate: 2
+  tls:
+    rejectUnauthorized: false
 
 scenarios:
   - name: "Google APIs"
