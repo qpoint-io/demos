@@ -17,3 +17,6 @@ spec:
         - name: artillery
           image: demo-artillery:latest
           imagePullPolicy: IfNotPresent
+          env:
+          - name: NODE_EXTRA_CA_CERTS
+            value: "/etc/ssl/certs/ca-certificates.crt"
