@@ -95,7 +95,17 @@ label-namespaces-egress-disable: kind ## Label the namespace for each app in app
 		fi; \
 	done
 
-up: ensure-deps ensure-images cluster cert-manager upload-images ## Bring up the demo environment
+create-namespaces: kind ## Create a Kubernetes namespace for each app in the apps directory
+	@for dir in apps/*/; do \
+		ns=$$(basename "$$dir"); \
+		if ! $(KUBECTL) get namespace "$$ns" &>/dev/null; then \
+			$(KUBECTL) create namespace "$$ns"; \
+		else \
+			echo "Namespace $$ns already exists"; \
+		fi; \
+	done
+
+up: ensure-deps ensure-images cluster cert-manager upload-images create-namespaces ## Bring up the demo environment
 
 down: ## Teardown the demo environment
 	$(KIND) delete cluster --name demo
