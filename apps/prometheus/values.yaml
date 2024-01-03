@@ -1,0 +1,52 @@
+# Custom values for Prometheus
+
+# General settings
+global:
+  scrape_interval: 15s  # Set the scrape interval
+  scrape_timeout: 10s  # Set the scrape timeout
+
+# Alertmanager configuration
+alertmanager:
+  enabled: true
+  config:
+    global:
+      # The Slack webhook URL
+      slack_api_url: 'https://hooks.slack.com/services/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'
+    
+    # Define the route and receiver
+    route:
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 20s 
+      receiver: 'slack-notifications'
+
+    # Define the receiver configuration
+    receivers:
+    - name: 'slack-notifications'
+      slack_configs:
+      - channel: '#prometheus-demo'
+        send_resolved: true
+        title: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+        text: "{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+
+# kubeStateMetrics port conflict
+kubeStateMetrics:
+  service:
+    port: 8081  # Change this to a port that's not being used
+
+
+# Heart Beat Configuration
+serverFiles:
+  rules:
+    groups:
+    - name: health-check
+      rules:
+      - alert: PrometheusHealthCheck
+        expr: vector(1)
+        for: 20s
+        labels:
+          severity: info
+        annotations:
+          summary: "Prometheus Health Check"
+          description: "This alert fires every 20 seconds to indicate Prometheus is up and running."

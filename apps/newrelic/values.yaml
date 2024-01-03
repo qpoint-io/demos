@@ -1,5 +1,5 @@
 global:
-  licenseKey: "bla"
+  licenseKey: "bla" ## API KEY GOES HERE
   cluster: "demo"
   lowDataMode: false
 
