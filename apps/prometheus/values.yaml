@@ -11,7 +11,7 @@ alertmanager:
   config:
     global:
       # The Slack webhook URL
-      slack_api_url: 'https://hooks.slack.com/services/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'
+      slack_api_url: 'bla'
     
     # Define the route and receiver
     route:
