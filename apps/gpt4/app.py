@@ -10,7 +10,7 @@ API_HEADERS = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {API_KEY}'
 }
-MODEL_NAME = os.getenv('MODEL_NAME', 'text-davinci-003')
+MODEL_NAME = os.getenv('MODEL_NAME', 'gpt-3.5-turbo-instruct')
 TEMPERATURE = float(os.getenv('TEMPERATURE', '0.5'))
 MAX_TOKENS = int(os.getenv('MAX_TOKENS', '1024'))
 
