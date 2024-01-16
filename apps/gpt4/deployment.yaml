@@ -23,7 +23,7 @@ spec:
             - name: API_KEY
               value: "bla"  # API KEY goes here!
             - name: MODEL_NAME
-              value: "text-davinci-003"
+              value: "gpt-3.5-turbo"
             - name: TEMPERATURE
               value: "0.5"
             - name: MAX_TOKENS
