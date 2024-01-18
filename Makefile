@@ -184,7 +184,7 @@ describe: ## Describe the app pod
 exec: ## Exec into the app container
 	@namespace=$$($(KUBECTL) config view --minify --output 'jsonpath={..namespace}'); \
 	pod_name=$$($(KUBECTL) get pods -n $$namespace -l app=$$namespace -o jsonpath="{.items[0].metadata.name}"); \
-	$(KUBECTL) exec -it $$pod_name -- /bin/sh
+	$(KUBECTL) exec -it $$pod_name -c $$namespace -- /bin/sh
 
 restart: ## Rollout a restart on the deployment
 	@namespace=$$($(KUBECTL) config view --minify --output 'jsonpath={..namespace}'); \
