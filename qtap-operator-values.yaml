@@ -1,9 +1,9 @@
-controllerManager:
-  manager:
-    image:
-      tag: "sha-d6af453"
-    env:
-      endpoint: https://24b1-50-89-103-165.ngrok-free.app
+# controllerManager:
+#   manager:
+#     # image:
+#     #   tag: "sha-d6af453"
+#     env:
+#       endpoint: https://tylerflint-qpoint-firebase.serveo.net
 
 injectPodAnnotationsConfigmap:
   annotationsYaml: |-
@@ -16,7 +16,7 @@ injectPodAnnotationsConfigmap:
     qpoint.io/qtap-uid: "1010"
     qpoint.io/qtap-gid: "1010"
     qpoint.io/qtap-log-level: "error"
-    qpoint.io/qtap-log-encoding: "json"
+    qpoint.io/qtap-log-encoding: "console"
     qpoint.io/qtap-log-caller: "false"
     qpoint.io/qtap-egress-http-listen: "0.0.0.0:10080"
     qpoint.io/qtap-egress-https-listen: "0.0.0.0:10443"
@@ -24,4 +24,4 @@ injectPodAnnotationsConfigmap:
     qpoint.io/qtap-block-unknown: "false"
     qpoint.io/qtap-envoy-log-level: "error"
     qpoint.io/qtap-dns-lookup-family: "V4_ONLY"
-    qpoint.io/qtap-api-endpoint: "https://24b1-50-89-103-165.ngrok-free.app"
+    qpoint.io/qtap-api-endpoint: "https://api.qpoint.io"
