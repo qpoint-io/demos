@@ -19,10 +19,8 @@ func main() {
 	// Get the URL from the command line arguments
 	url := os.Args[1]
 
-	// Set up HTTP transport that respects HTTP_PROXY and HTTPS_PROXY
-	transport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-	}
+	// Create an HTTP transport with default settings
+	transport := http.DefaultTransport.(*http.Transport).Clone()
 
 	// Check if a CA certificate file is provided
 	if len(os.Args) == 3 {

@@ -1,7 +1,7 @@
 # HTTP Client with Optional CA Certificate Injection in Go
 
 ## Overview
-This Go program is a command-line tool that makes an HTTP GET request to a specified URL. It is capable of using a custom CA (Certificate Authority) certificate, if provided, to establish trust with the server during the TLS handshake. This feature is particularly useful when dealing with self-signed certificates or certificates signed by a private CA.
+This Go program is a command-line tool that makes an HTTP GET request to a specified URL. It is capable of using a custom CA (Certificate Authority) certificate, if provided, to establish trust with the server during the TLS handshake. This feature is particularly useful when dealing with self-signed certificates or certificates signed by a private CA. The script also automatically respects `HTTP_PROXY` and `HTTPS_PROXY` environment variables.
 
 ## Requirements
 - Go (version 1.11 or later)
