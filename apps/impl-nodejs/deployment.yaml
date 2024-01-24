@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: impl-nodejs
+  namespace: impl-nodejs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: impl-nodejs
+  template:
+    metadata:
+      labels:
+        app: impl-nodejs
+    spec:
+      containers:
+      - name: impl-nodejs
+        image: demo-impl-nodejs
+        imagePullPolicy: Never
