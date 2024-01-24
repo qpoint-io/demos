@@ -9,7 +9,7 @@ RUN go build -o sample-go main.go
 FROM ubuntu:latest
 
 RUN apt-get update
-RUN apt-get -y install tini
+RUN apt-get -y install ca-certificates tini
 
 COPY --from=build /app/sample-go /usr/local/bin/sample-go
 

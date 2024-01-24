@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: impl-go
+  namespace: impl-go
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: impl-go
+  template:
+    metadata:
+      labels:
+        app: impl-go
+    spec:
+      containers:
+      - name: impl-go
+        image: demo-impl-go
+        imagePullPolicy: Never
