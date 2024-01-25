@@ -6,13 +6,13 @@ A collection of apps and helpers to quickly spin up demos
 
 Ensure you have all the necessary dependencies:
 
-```text
+```bash
 make ensure-deps
 ```
 
 Then build the necessary resources and images:
 
-```text
+```bash
 make build
 ```
 
@@ -20,18 +20,21 @@ make build
 
 Check to see which apps are available:
 
-```text
+```bash
 make help
 ```
 
 Bring up an app:
 
-```text
-make <app>
+```bash
+make <app>-app
+
+# for example
+make gpt4-app
 ```
 
 Teardown when complete
 
-```text
+```bash
 make down
 ```

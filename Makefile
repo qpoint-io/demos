@@ -236,3 +236,12 @@ install: # Install all necessary dependencies
 	@./install.sh
 
 ensure-deps: docker kubectl kind helm ## Ensure all dependencies are ready
+
+qtap-gateway-tunnel: ## Starts up a local Qtap Proxy Tunnel on 10080 and 10443
+	docker run -p 10080:10080 -p 10443:10443 us-docker.pkg.dev/qpoint-edge/public/qtap:v0.0.12 \
+		gateway \
+		--envoy-log-level=error --log-level=info --dns-lookup-family=V4_ONLY \
+		--token=$$TOKEN \
+		--egress-http-listen="0.0.0.0:10080" \
+		--egress-https-listen="0.0.0.0:10443"
+
