@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: impl-python3
+  namespace: impl-python3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: impl-python3
+  template:
+    metadata:
+      labels:
+        app: impl-python3
+    spec:
+      containers:
+      - name: impl-python3
+        image: demo-impl-python3
+        imagePullPolicy: Never
