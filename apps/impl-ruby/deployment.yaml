@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: impl-ruby
+  namespace: impl-ruby
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: impl-ruby
+  template:
+    metadata:
+      labels:
+        app: impl-ruby
+    spec:
+      containers:
+      - name: impl-ruby
+        image: demo-impl-ruby
+        imagePullPolicy: Never
