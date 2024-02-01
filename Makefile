@@ -75,7 +75,7 @@ label-namespaces-egress-service: kind ## Label the namespace for each app in app
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'service'; then \
-			$(KUBECTL) label namespace "$$ns" qpoint-egress=service --overwrite; \
+			$(KUBECTL) label namespace "$$ns" qpoint.io/egress=service --overwrite; \
 		fi; \
 	done
 
@@ -83,7 +83,7 @@ label-namespaces-egress-inject: kind ## Label the namespace for each app in apps
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'inject'; then \
-			$(KUBECTL) label namespace "$$ns" qpoint-egress=inject --overwrite; \
+			$(KUBECTL) label namespace "$$ns" qpoint.io/egress=inject --overwrite; \
 		fi; \
 	done
 
@@ -91,7 +91,7 @@ label-namespaces-egress-disable: kind ## Label the namespace for each app in app
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'disable'; then \
-			$(KUBECTL) label namespace "$$ns" qpoint-egress=disable --overwrite; \
+			$(KUBECTL) label namespace "$$ns" qpoint.io/egress=disable --overwrite; \
 		fi; \
 	done
 
