@@ -1,4 +1,4 @@
-FROM ruby:latest
+FROM ruby:3.3-slim
 
 RUN apt-get update
 RUN apt-get -y install ca-certificates tini
