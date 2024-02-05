@@ -1,0 +1,15 @@
+{
+  "name": "impl-nodejs",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "## Overview This Node.js script is a command-line tool for making HTTP or HTTPS GET requests. It includes an optional feature to use a custom CA (Certificate Authority) certificate for SSL/TLS verification, which is useful when dealing with self-signed certificates or certificates signed by a private CA.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "https-proxy-agent": "^7.0.2"
+  }
+}
