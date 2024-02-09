@@ -45,7 +45,7 @@ install_kubectl() {
   if [ -f "bin/kubectl" ]; then
     return 0
   fi
-  
+
   # ensure bin dir
   mkdir -p bin
 
@@ -66,11 +66,11 @@ install_kind() {
   if [ -f "bin/kind" ]; then
     return 0
   fi
-  
+
   # ensure bin dir
   mkdir -p bin
 
-  # install 
+  # install
   curl -Lo bin/kind "https://kind.sigs.k8s.io/dl/v0.20.0/kind-${platform}-${architecture}"
 
   # ensure executable
@@ -84,7 +84,7 @@ install_helm() {
   if [ -f "bin/helm" ]; then
     return 0
   fi
-  
+
   # ensure bin dir
   mkdir -p bin
 
