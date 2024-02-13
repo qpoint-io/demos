@@ -71,7 +71,7 @@ upload-images: kind ## Upload app images into the cluster
 		fi; \
 	done
 
-label-namespaces-egress-service: kind ## Label the namespace for each app in apps directory with qpoint-egress=service
+label-namespaces-egress-service: kind ## Label the namespace for each app in apps directory with qpoint.io/egress=service
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'service'; then \
@@ -79,7 +79,7 @@ label-namespaces-egress-service: kind ## Label the namespace for each app in app
 		fi; \
 	done
 
-label-namespaces-egress-inject: kind ## Label the namespace for each app in apps directory with qpoint-egress=inject
+label-namespaces-egress-inject: kind ## Label the namespace for each app in apps directory with qpoint.io/egress=inject
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'inject'; then \
@@ -87,7 +87,7 @@ label-namespaces-egress-inject: kind ## Label the namespace for each app in apps
 		fi; \
 	done
 
-label-namespaces-egress-disable: kind ## Label the namespace for each app in apps directory with qpoint-egress=disable
+label-namespaces-egress-disable: kind ## Label the namespace for each app in apps directory with qpoint.io/egress=disable
 	@for dir in apps/*/; do \
 		ns=$$(basename "$$dir"); \
 		if ! $(KUBECTL) get namespace "$$ns" -o=jsonpath='{.metadata.labels.qpoint-egress}' | grep -q 'disable'; then \
