@@ -1,48 +1,73 @@
 config:
-  target: 'http://qpoint.com'
+  target: 'http://qpoint.com' # Base URL for QPoint to intercept and manage traffic
   phases:
-    - duration: 300
-      arrivalRate: 2
+    - duration: 600 # Duration of the test in seconds
+      arrivalRate: 5 # New virtual users per second
+  tls:
+    rejectUnauthorized: false # For testing purposes, ignore self-signed certs issues
 
 scenarios:
-  - name: "Google APIs"
+  - name: "Google Books API"
     flow:
       - get:
-          url: "https://www.googleapis.com/books/v1/volumes?q=flowers"
+          url: "https://www.googleapis.com/books/v1/volumes?q=programming"
       - post:
           url: "https://www.googleapis.com/books/v1/mylibrary/bookshelves"
+          json:
+            name: "Favorites"
+            description: "Favorite programming books"
 
-  - name: "Azure APIs"
+  - name: "Azure Compute APIs"
     flow:
       - get:
-          url: "https://management.azure.com/subscriptions?api-version=2020-01-01"
-      - delete:
-          url: "https://management.azure.com/subscriptions/{subscriptionId}?api-version=2020-01-01"
-
-  - name: "Salesforce APIs"
-    flow:
-      - get:
-          url: "https://login.salesforce.com/services/oauth2/authorize"
+          url: "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups?api-version=2021-04-01"
       - post:
-          url: "https://yourInstance.salesforce.com/services/data/v20.0/sobjects/Account/"
+          url: "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines?api-version=2021-12-01"
+          json:
+            location: "eastus"
+            properties:
+              hardwareProfile:
+                vmSize: "Standard_DS1_v2"
 
-  - name: "Stripe APIs"
+  - name: "Salesforce CRM Operations"
     flow:
       - get:
-          url: "https://api.stripe.com/v1/charges"
+          url: "https://yourInstance.salesforce.com/services/data/v50.0/query/?q=SELECT+name+FROM+Account"
       - post:
-          url: "https://api.stripe.com/v1/charges"
+          url: "https://yourInstance.salesforce.com/services/data/v50.0/sobjects/Lead/"
+          json:
+            LastName: "Doe"
+            Company: "Acme"
 
-  - name: "Square APIs"
+  - name: "Stripe Payment Processing"
     flow:
       - get:
-          url: "https://connect.squareup.com/v2/locations"
+          url: "https://api.stripe.com/v1/customers"
+      - post:
+          url: "https://api.stripe.com/v1/payments"
+          json:
+            amount: 2000
+            currency: "usd"
+            source: "tok_visa"
+            description: "Test payment"
+
+  - name: "AWS S3 Storage Operations"
+    flow:
+      - get:
+          url: "https://s3.amazonaws.com/{bucketName}"
       - put:
-          url: "https://connect.squareup.com/v2/inventory/{variation_id}"
+          url: "https://s3.amazonaws.com/{bucketName}/{objectKey}"
+          headers:
+            Content-Type: "application/json"
+          json:
+            data: "Hello, QPoint!"
 
-  - name: "AWS APIs"
+  - name: "GitHub Repository Management"
     flow:
       - get:
-          url: "https://s3.amazonaws.com"
+          url: "https://api.github.com/user/repos"
       - post:
-          url: "https://sns.us-east-1.amazonaws.com/"
+          url: "https://api.github.com/user/repos"
+          json:
+            name: "new-repo"
+            private: false

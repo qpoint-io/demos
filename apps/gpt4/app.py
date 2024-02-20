@@ -4,13 +4,13 @@ import requests
 from flask import Flask, request, render_template_string
 
 # Define constants from environment variables
-API_URL = os.getenv('API_URL', 'https://api.openai.com/v1/completions')
+API_URL = os.getenv('API_URL', 'https://api.openai.com/v1/chat/completions')
 API_KEY = os.getenv('API_KEY')  # Assumes API key is set as an environment variable
 API_HEADERS = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {API_KEY}'
 }
-MODEL_NAME = os.getenv('MODEL_NAME', 'gpt-3.5-turbo-instruct')
+MODEL_NAME = os.getenv('MODEL_NAME', 'gpt-3.5-turbo')
 TEMPERATURE = float(os.getenv('TEMPERATURE', '0.5'))
 MAX_TOKENS = int(os.getenv('MAX_TOKENS', '1024'))
 
@@ -27,9 +27,13 @@ def log_request_response(response, data):
 
 def get_generated_text(prompt):
     """Send a request to the API and return the generated text."""
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": prompt}
+    ]
     data = {
         'model': MODEL_NAME,
-        'prompt': prompt,
+        'messages': messages,
         'temperature': TEMPERATURE,
         'max_tokens': MAX_TOKENS
     }
@@ -43,7 +47,8 @@ def get_generated_text(prompt):
     log_request_response(response, data)  # Log the request and response data
     
     try:
-        return response.json()['choices'][0]['text']
+        # Adjusted to handle the chat completion response structure
+        return response.json()['choices'][0]['message']['content']
     except (ValueError, KeyError) as e:
         error_message = f'Error decoding JSON response or missing expected keys: {e}'
         app.logger.error(error_message)
