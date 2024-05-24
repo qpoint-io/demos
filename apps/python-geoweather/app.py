@@ -77,7 +77,7 @@ async def weather():
         return render_template_string(weather_html)
     else:
         logging.error(f"Error fetching location data for IP: {public_ip}")
-        return f"Error fetching location data for IP: {public_ip}"
+        return f"Error fetching location data for IP"
 
 if __name__ == "__main__":
     import asyncio
