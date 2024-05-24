@@ -38,7 +38,7 @@ services:
     depends_on:
       - qtap.local
   qtap.local:
-    image: "qpoint:dev"
+    image: "us-docker.pkg.dev/qpoint-edge/public/qpoint:head"
     environment:
       - TOKEN=${TOKEN}
     command: >

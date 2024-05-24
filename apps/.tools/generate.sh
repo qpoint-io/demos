@@ -1,9 +1,15 @@
 #!/bin/bash
 
+# Get the directory of the current script
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+
+# Move to one directory above the script directory
+cd "$SCRIPT_DIR/.."
+
 # Read the templates from files
-DOCKER_COMPOSE_HEADER=$(cat .tools/compose-header.yml)
-QTAP_LOCAL_SERVICE=$(cat .tools/qtap-service.yml)
-SERVICE_TEMPLATE=$(cat .tools/service-template.yml)
+DOCKER_COMPOSE_HEADER=$(cat "$SCRIPT_DIR/compose-header.yml")
+QTAP_LOCAL_SERVICE=$(cat "$SCRIPT_DIR/qtap-service.yml")
+SERVICE_TEMPLATE=$(cat "$SCRIPT_DIR/service-template.yml")
 
 # Initialize the services array and port
 services=()
