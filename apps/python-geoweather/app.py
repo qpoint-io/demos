@@ -21,8 +21,8 @@ async def get_location(ip):
         response = await client.get(url)
         return response.json()
 
-async def get_weather(lat, lon, api_key):
-    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric"
+async def get_weather(lat, lon):
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m&forecast_days=1"
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
         return response.json()
@@ -53,13 +53,11 @@ async def weather():
     public_ip = await get_public_ip()
     logging.debug(f"Public IP fetched: {public_ip}")
 
-    owm_key = '56e9e892982ed4de87fb7d8a6f470463'
-
     location = await get_location(public_ip)
     logging.debug(f"Location fetched for IP {public_ip}: {location}")
 
     if 'lat' in location and 'lon' in location:
-        weather = await get_weather(location['lat'], location['lon'], owm_key)
+        weather = await get_weather(location['lat'], location['lon'])
         logging.debug(f"Weather fetched for location {location['lat']}, {location['lon']}: {weather}")
 
         weather_html = f"""
@@ -71,8 +69,7 @@ async def weather():
         </head>
         <body>
             <h1>Weather for {location['city']}, {location['country']} (Python)</h1>
-            <p>Current weather: {weather['weather'][0]['description']}</p>
-            <p>Temperature: {weather['main']['temp']}°C</p>
+            <p>Temperature: {weather['current']['temperature_2m']}°C</p>
             <a href="/">Back to home</a>
         </body>
         </html>

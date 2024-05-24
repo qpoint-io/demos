@@ -1,7 +1,5 @@
 #!/bin/bash
 
-OWM_API_KEY="56e9e892982ed4de87fb7d8a6f470463"
-
 # Function to get public IP
 get_public_ip() {
     local ip
@@ -17,7 +15,7 @@ get_public_ip() {
 get_location() {
     local ip="$1"
     local location
-    location=$(curl -s "https://ipapi.co/${ip}/json/")
+    location=$(curl -s "http://ip-api.com/json/{$ip}")
     if [ -z "$location" ]; then
         echo "Unable to get location"
         exit 1
@@ -30,7 +28,7 @@ get_weather() {
     local lat="$1"
     local lon="$2"
     local weather
-    weather=$(curl -s "https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OWM_API_KEY}&units=metric")
+    weather=$(curl -s "https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&forecast_days=1")
     if [ -z "$weather" ]; then
         echo "Unable to get weather"
         exit 1
@@ -53,8 +51,8 @@ main() {
     local city country latitude longitude
     city=$(echo "$location" | jq -r .city)
     country=$(echo "$location" | jq -r .country_name)
-    latitude=$(echo "$location" | jq -r .latitude)
-    longitude=$(echo "$location" | jq -r .longitude)
+    latitude=$(echo "$location" | jq -r .lat)
+    longitude=$(echo "$location" | jq -r .lon)
 
     if [ -z "$latitude" ] || [ -z "$longitude" ]; then
         echo "Error fetching location data for IP: $public_ip"
@@ -66,8 +64,7 @@ main() {
     echo "Weather fetched for location $latitude, $longitude: $weather"
 
     local description temperature
-    description=$(echo "$weather" | jq -r .weather[0].description)
-    temperature=$(echo "$weather" | jq -r .main.temp)
+    temperature=$(echo "$weather" | jq -r .current.temperature_2m)
 
     echo -e "\nWeather for $city, $country"
     echo "Current weather: $description"

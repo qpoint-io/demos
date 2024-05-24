@@ -8,8 +8,6 @@ import (
 	"net/http"
 )
 
-const owmAPIKey = "56e9e892982ed4de87fb7d8a6f470463"
-
 type IPResponse struct {
 	Origin string `json:"origin"`
 }
@@ -17,17 +15,14 @@ type IPResponse struct {
 type LocationResponse struct {
 	City        string  `json:"city"`
 	CountryName string  `json:"country_name"`
-	Latitude    float64 `json:"latitude"`
-	Longitude   float64 `json:"longitude"`
+	Latitude    float64 `json:"lat"`
+	Longitude   float64 `json:"lon"`
 }
 
 type WeatherResponse struct {
-	Weather []struct {
-		Description string `json:"description"`
-	} `json:"weather"`
-	Main struct {
-		Temp float64 `json:"temp"`
-	} `json:"main"`
+	Current struct {
+		Temp float64 `json:"temperature_2m"`
+	} `json:"current"`
 }
 
 func getPublicIP() (string, error) {
@@ -46,7 +41,7 @@ func getPublicIP() (string, error) {
 }
 
 func getLocation(ip string) (LocationResponse, error) {
-	url := fmt.Sprintf("https://ipapi.co/%s/json/", ip)
+	url := fmt.Sprintf("http://ip-api.com/json/%s", ip)
 	resp, err := http.Get(url)
 	if err != nil {
 		return LocationResponse{}, fmt.Errorf("unable to get location: %v", err)
@@ -62,7 +57,7 @@ func getLocation(ip string) (LocationResponse, error) {
 }
 
 func getWeather(lat, lon float64) (WeatherResponse, error) {
-	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", lat, lon, owmAPIKey)
+	url := fmt.Sprintf("https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&current=temperature_2m&forecast_days=1", lat, lon)
 	resp, err := http.Get(url)
 	if err != nil {
 		return WeatherResponse{}, fmt.Errorf("unable to get weather: %v", err)
@@ -129,7 +124,6 @@ func weatherHandler(w http.ResponseWriter, r *http.Request) {
 	</head>
 	<body>
 		<h1>Weather for {{.City}}, {{.CountryName}} (Go)</h1>
-		<p>Current weather: {{.WeatherDescription}}</p>
 		<p>Temperature: {{.Temperature}}°C</p>
 		<a href="/">Back to home</a>
 	</body>
@@ -137,15 +131,13 @@ func weatherHandler(w http.ResponseWriter, r *http.Request) {
 	`
 
 	data := struct {
-		City               string
-		CountryName        string
-		WeatherDescription string
-		Temperature        float64
+		City        string
+		CountryName string
+		Temperature float64
 	}{
-		City:               location.City,
-		CountryName:        location.CountryName,
-		WeatherDescription: weather.Weather[0].Description,
-		Temperature:        weather.Main.Temp,
+		City:        location.City,
+		CountryName: location.CountryName,
+		Temperature: weather.Current.Temp,
 	}
 
 	tmpl := template.Must(template.New("weather").Parse(weatherHTML))

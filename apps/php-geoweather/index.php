@@ -41,9 +41,9 @@ function get_location($ip) {
     return $location;
 }
 
-function get_weather($lat, $lon, $api_key) {
+function get_weather($lat, $lon) {
     log_message("Fetching weather for lat: " . $lat . " lon: " . $lon);
-    $url = "https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$api_key}&units=metric";
+    $url = "https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&forecast_days=1";
     $response = file_get_contents($url);
     if ($response === false) {
         log_message("Error fetching weather.");
@@ -59,7 +59,6 @@ function get_weather($lat, $lon, $api_key) {
 }
 log_message("Loading PHP website...");
 
-$owm_key = '56e9e892982ed4de87fb7d8a6f470463';
 $weather = null;
 $location = null;
 
@@ -69,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($public_ip) {
         $location = get_location($public_ip);
         if (isset($location['lat']) && isset($location['lon'])) {
-            $weather = get_weather($location['lat'], $location['lon'], $owm_key);
+            $weather = get_weather($location['lat'], $location['lon']);
         } else {
             log_message("Error fetching location data for IP: " . $public_ip);
         }
@@ -92,8 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <?php if ($_SERVER['REQUEST_METHOD'] == 'POST' && $weather && $location): ?>
         <h1>Weather for <?= htmlspecialchars($location['city']) ?>, <?= htmlspecialchars($location['country']) ?></h1>
-        <p>Current weather: <?= htmlspecialchars($weather['weather'][0]['description']) ?></p>
-        <p>Temperature: <?= htmlspecialchars($weather['main']['temp']) ?>°C</p>
+        <p>Temperature: <?= htmlspecialchars($weather['current']['temperature_2m']) ?>°C</p>
         <a href="/">Back to home</a>
     <?php endif; ?>
 </body>

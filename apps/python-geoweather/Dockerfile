@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.8-slim
+FROM python:3.12-slim
 
 # Get latest public CA's
 RUN apt install -y ca-certificates
