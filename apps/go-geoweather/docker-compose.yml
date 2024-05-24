@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  go-geoweather:
+    build: .
+    environment:
+      - HTTP_PROXY=http://qtap.local:18080
+      - HTTPS_PROXY=http://qtap.local:18443
+    ports:
+      - "4000:80"
+    depends_on:
+      - qtap.local
+  qtap.local:
+    image: "qpoint:dev"
+    environment:
+      - TOKEN=${TOKEN}
+    command: >
+      proxy
+      --envoy-log-level=info
+      --log-level=debug
+      --registration-token=$TOKEN
+      --log-encoding="console"
+      --dns-lookup-family="V4_ONLY"
+    ports:
+      - "10080:10080"
+      - "10443:10443"
+      - "18080:18080"
+      - "18443:18443"
+      - "9901:9901"
