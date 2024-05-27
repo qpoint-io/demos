@@ -13,8 +13,5 @@ COPY geoweather.sh .
 # Ensure the script has execute permissions
 RUN chmod +x geoweather.sh
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
-
 # Run the Bash script when the container launches
 CMD ["./geoweather.sh"]

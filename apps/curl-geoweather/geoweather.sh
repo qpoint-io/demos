@@ -36,9 +36,34 @@ get_weather() {
     echo "$weather"
 }
 
+# Function to check if the service is ready
+check_ready() {
+    local max_retries=60
+    local retry_count=0
+    local status
+
+    while [ $retry_count -lt $max_retries ]; do
+        status=$(curl -s http://qtap.local:10001/readyz)
+        if [ "$status" == "ready" ]; then
+            echo "Service is ready"
+            return 0
+        fi
+        echo "Service not ready, retrying in 1 second... $status"
+        sleep 1
+        ((retry_count++))
+    done
+
+    echo "Service did not become ready in time"
+    exit 1
+}
+
+
 # Main function to fetch and display weather information
 main() {
     echo "Starting weather function"
+
+    # Check if the service is ready
+    check_ready
 
     local public_ip
     public_ip=$(get_public_ip)
