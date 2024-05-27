@@ -1,6 +1,11 @@
-# GeoWeather App (go)
+<!--
 
-A simple demo application that displays the weather for the user's current location based on their IP address. The app is built using `go` and accepts `HTTP_PROXY` and `HTTPS_PROXY` environment variables for interacting with QPoint.
+Warning: This is a generated file. Do Not Edit.
+
+-->
+# GeoWeather App ({{service_language}})
+
+A simple demo application that displays the weather for the user's current location based on their IP address. The app is built using `{{service_language}}` and accepts `HTTP_PROXY` and `HTTPS_PROXY` environment variables for interacting with QPoint.
 
 ## Prerequisites
 
@@ -33,7 +38,7 @@ At this point, you'll have a running Qpoint proxy ready to take on traffic!
 
 ```
 git clone https://github.com/qpoint-io/demos.git
-cd demos/apps/go-geoweather
+cd demos/apps/{{service_name}}
 ```
 
 ### 4. Build & Start the Docker Container
@@ -42,12 +47,12 @@ Within an app directory of your choosing, run the following command to build and
 > Note: If you used an address other than "localhost," make sure to update those values in this command.
 
 ```
-docker build -t go-geoweather . && \
+docker build -t {{service_name}} . && \
     docker run -it --rm \
     --network host \
     -e HTTP_PROXY=http://localhost:18080 \
     -e HTTPS_PROXY=http://localhost:18443 \
-    go-geoweather
+    {{service_name}}
 ```
 
 > Note: This command uses the host machine's network to provide access to the published ports in the Qpoint container. 

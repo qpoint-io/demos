@@ -81,5 +81,5 @@ async def weather():
 
 if __name__ == "__main__":
     import asyncio
-    app.run(host='0.0.0.0', port=4000)
+    app.run(host='0.0.0.0', port=80)
 

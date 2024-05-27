@@ -1,16 +1,4 @@
-version: '3.8'
-
-services:
-  go-geoweather:
-    build: .
-    environment:
-      - HTTP_PROXY=http://qtap.local:18080
-      - HTTPS_PROXY=http://qtap.local:18443
-    ports:
-      - "4000:80"
-    depends_on:
-      - qtap.local
-  qtap.local:
+  qpoint.local:
     image: "us-docker.pkg.dev/qpoint-edge/public/qpoint:head"
     environment:
       - TOKEN=${TOKEN}

@@ -1,9 +1,0 @@
-  {{service_name}}:
-    build: {{build_path}}
-    environment:
-      - HTTP_PROXY=http://qtap.local:18080
-      - HTTPS_PROXY=http://qtap.local:18443
-    ports:
-      - "{{port}}:80"
-    depends_on:
-      - qtap.local

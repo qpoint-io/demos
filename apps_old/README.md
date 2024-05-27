@@ -27,7 +27,10 @@ These applications are containerized using Docker and Docker Compose. The provid
 ### 4. Build and run
 
 ```bash
-TOKEN=<Qpoint_JQT> docker-compose up --build
+QPOINT_HTTP_PROXY=http://qpoint.local:10080 \
+QPOINT_HTTPS_PROXY=http://qpoint.local:10443 \
+TOKEN=<Qpoint_JQT> \
+docker-compose up --build
 ```
 
 This will build all of app images and start those containers with Qpoint proxy. Applications are given a port forward in the 4000 range and are available for access. All apps can be access simultaneously and the traffic will be reported to Qpoint. 

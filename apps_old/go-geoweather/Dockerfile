@@ -17,10 +17,8 @@ FROM alpine:latest
 # Get latest CA's
 ARG TOKEN
 RUN apk --no-cache add curl ca-certificates && \
-    if [ -n "$TOKEN" ]; then \
-        curl -s https://api.qpoint.io/deploy/certificate -H "Authorization: Bearer $TOKEN" > /usr/local/share/ca-certificates/qpoint-ca.crt && \
-        update-ca-certificates; \
-    fi
+    curl -s https://api.qpoint.io/deploy/certificate -H "Authorization: Bearer $TOKEN" > /usr/local/share/ca-certificates/qpoint-ca.crt && \
+    update-ca-certificates
 
 # Set the working directory inside the container.
 WORKDIR /app
