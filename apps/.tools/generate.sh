@@ -11,7 +11,7 @@ README_WEB_TEMPLATE=$(cat "$SCRIPT_DIR/readme.web.md")
 README_CONSOLE_TEMPLATE=$(cat "$SCRIPT_DIR/readme.console.md")
 
 # Skip
-skip_projects=("terminalgpt")
+skip_projects=()
 
 # List of console languages
 console_languages=("curl")
