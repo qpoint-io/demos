@@ -10,6 +10,9 @@ cd "$SCRIPT_DIR/.."
 README_WEB_TEMPLATE=$(cat "$SCRIPT_DIR/readme.web.md")
 README_CONSOLE_TEMPLATE=$(cat "$SCRIPT_DIR/readme.console.md")
 
+# Skip
+skip_projects=("terminalgpt")
+
 # List of console languages
 console_languages=("curl")
 
@@ -18,6 +21,13 @@ for dir in */; do
   if [ -f "${dir}Dockerfile" ]; then
     # Remove the trailing slash from the directory name
     service_name=${dir%/}
+
+    # Check if the service_name is in the skip_projects array
+    if [[ " ${skip_projects[@]} " =~ " ${service_name} " ]]; then
+      echo "Skipping $service_name"
+      continue
+    fi
+
     # Extract the service language
     service_language=$(echo "$service_name" | cut -d'-' -f1)
     

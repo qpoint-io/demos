@@ -1,11 +1,9 @@
-<!--
+> NOTE: This is not currently working
 
-Warning: This is a generated file. Do Not Edit.
+# TerminalGPT
 
--->
-# GeoWeather App (curl)
+This is a simple chat GPT like in the terminal.
 
-A simple demo application that displays the weather for the user's current location based on their IP address. The app is built using `curl` and accepts `HTTP_PROXY` and `HTTPS_PROXY` environment variables for interacting with QPoint.
 
 ## Prerequisites
 
@@ -38,47 +36,23 @@ At this point, you'll have a running Qpoint proxy ready to take on traffic!
 
 ```
 git clone https://github.com/qpoint-io/demos.git
-cd demos/apps/curl-geoweather
+cd demos/apps/terminalgpt
 ```
 
 ### 4. Build & Start the Docker Container
-Within an app directory of your choosing, run the following command to build and run the application.
+Within the terminalgpt directory of your choosing, run the following command to build and run the application.
 
 > Note: If you used an address other than "localhost," make sure to update those values in this command.
 
 ```
-docker build -t curl-geoweather . && \
+docker build -t terminalgpt . && \
     docker run -it --rm \
     --network host \
-    -e http_proxy=http://localhost:18080 \
-    -e HTTP_PROXY=http://localhost:18080 \
-    -e HTTPS_PROXY=http://localhost:18443 \
-    curl-geoweather
+    -e HTTP_PROXY=http://localhost:10080 \
+    terminalgpt
 ```
 
 > Note: This command uses the host machine's network to provide access to the published ports in the Qpoint container. 
-
-### 5. Test the App
-
-This app will output details to console, they may look something like:
-
-```bash
-Starting weather function
-> HTTPS_PROXY environment variable is not set. Skipping.
-
-1. Public IP fetched: 172.217.22.14
-
-2. Location fetched for IP 172.217.22.14:
-        Vancouver, Canada
-        (49.2827, -123.1207)
-
-3. Weather for Edmonton, Canada
-        Temperature: 16.9°C
-```
-
-### 6. Review Traffic
-
-This app reaches out to various APIs to retrieve your remote IP, geo-IP location, and weather data. Navigating to the [Qpoint Traffic Dashboard](https://qpoint.io) will display the domain URLs being accessed by the application. Each domain is clickable and will let you dive into the traffic for each.
 
 ## License
 
