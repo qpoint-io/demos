@@ -1,3 +1,8 @@
+<!--
+
+Warning: This is a generated file. Do Not Edit.
+
+-->
 # GeoWeather App (go)
 
 A simple demo application that displays the weather for the user's current location based on their IP address. The app is built using `go` and accepts `HTTP_PROXY` and `HTTPS_PROXY` environment variables for interacting with QPoint.

@@ -3,9 +3,9 @@
 Warning: This is a generated file. Do Not Edit.
 
 -->
-# GeoWeather App (python)
+# GeoWeather App ({{service_language}})
 
-A simple demo application that displays the weather for the user's current location based on their IP address. The app is built using `python` and accepts `HTTP_PROXY` and `HTTPS_PROXY` environment variables for interacting with QPoint.
+A simple demo application that displays the weather for the user's current location based on their IP address. The app is built using `{{service_language}}` and accepts `HTTP_PROXY` and `HTTPS_PROXY` environment variables for interacting with QPoint.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ At this point, you'll have a running Qpoint proxy ready to take on traffic!
 
 ```
 git clone https://github.com/qpoint-io/demos.git
-cd demos/apps/python-geoweather
+cd demos/apps/{{service_name}}
 ```
 
 ### 4. Build & Start the Docker Container
@@ -47,19 +47,33 @@ Within an app directory of your choosing, run the following command to build and
 > Note: If you used an address other than "localhost," make sure to update those values in this command.
 
 ```
-docker build -t python-geoweather . && \
+docker build -t {{service_name}} . && \
     docker run -it --rm \
     --network host \
     -e HTTP_PROXY=http://localhost:18080 \
     -e HTTPS_PROXY=http://localhost:18443 \
-    python-geoweather
+    {{service_name}}
 ```
 
 > Note: This command uses the host machine's network to provide access to the published ports in the Qpoint container. 
 
 ### 5. Test the App
 
-Navigate to [localhost:4000](http://localhost:4000) and check the weather for your location.
+This app will output details to console, they may look something like:
+
+```bash
+Starting weather function
+> HTTPS_PROXY environment variable is not set. Skipping.
+
+1. Public IP fetched: 172.217.22.14
+
+2. Location fetched for IP 172.217.22.14:
+        Vancouver, Canada
+        (49.2827, -123.1207)
+
+3. Weather for Edmonton, Canada
+        Temperature: 16.9°C
+```
 
 ### 6. Review Traffic
 

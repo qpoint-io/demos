@@ -1,3 +1,8 @@
+<!--
+
+Warning: This is a generated file. Do Not Edit.
+
+-->
 # GeoWeather App (curl)
 
 A simple demo application that displays the weather for the user's current location based on their IP address. The app is built using `curl` and accepts `HTTP_PROXY` and `HTTPS_PROXY` environment variables for interacting with QPoint.
@@ -54,7 +59,21 @@ docker build -t curl-geoweather . && \
 
 ### 5. Test the App
 
-Navigate to [localhost:4000](http://localhost:4000) and check the weather for your location.
+This app will output details to console, they may look something like:
+
+```bash
+Starting weather function
+> HTTPS_PROXY environment variable is not set. Skipping.
+
+1. Public IP fetched: 172.217.22.14
+
+2. Location fetched for IP 172.217.22.14:
+        Vancouver, Canada
+        (49.2827, -123.1207)
+
+3. Weather for Edmonton, Canada
+        Temperature: 16.9°C
+```
 
 ### 6. Review Traffic
 

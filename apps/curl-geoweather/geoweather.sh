@@ -38,6 +38,11 @@ get_weather() {
 
 # Function to check if the service is ready
 check_ready() {
+    if [ -z "$HTTPS_PROXY" ]; then
+        echo "> HTTPS_PROXY environment variable is not set. Skipping."
+        return 0
+    fi
+
     local max_retries=60
     local retry_count=0
     local status
@@ -58,6 +63,7 @@ check_ready() {
 }
 
 
+
 # Main function to fetch and display weather information
 main() {
     echo "Starting weather function"
@@ -67,17 +73,17 @@ main() {
 
     local public_ip
     public_ip=$(get_public_ip)
-    echo "Public IP fetched: $public_ip"
+    echo -e "\n1. Public IP fetched: $public_ip"
 
     local location
     location=$(get_location "$public_ip")
-    echo "Location fetched for IP $public_ip: $location"
 
     local city country latitude longitude
     city=$(echo "$location" | jq -r .city)
-    country=$(echo "$location" | jq -r .country_name)
+    country=$(echo "$location" | jq -r .country)
     latitude=$(echo "$location" | jq -r .lat)
     longitude=$(echo "$location" | jq -r .lon)
+    echo -e "\n2. Location fetched for IP $public_ip:\n\t$city, $country\n\t($latitude, $longitude)"
 
     if [ -z "$latitude" ] || [ -z "$longitude" ]; then
         echo "Error fetching location data for IP: $public_ip"
@@ -86,14 +92,11 @@ main() {
 
     local weather
     weather=$(get_weather "$latitude" "$longitude")
-    echo "Weather fetched for location $latitude, $longitude: $weather"
-
     local description temperature
     temperature=$(echo "$weather" | jq -r .current.temperature_2m)
 
-    echo -e "\nWeather for $city, $country"
-    echo "Current weather: $description"
-    echo "Temperature: ${temperature}°C"
+    echo -e "\n3. Weather for $city, $country"
+    echo -e "\tTemperature: ${temperature}°C"
 }
 
 main
