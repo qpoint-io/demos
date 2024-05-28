@@ -50,6 +50,7 @@ Within an app directory of your choosing, run the following command to build and
 docker build -t {{service_name}} . && \
     docker run -it --rm \
     --network host \
+    -e http_proxy=http://localhost:18080 \
     -e HTTP_PROXY=http://localhost:18080 \
     -e HTTPS_PROXY=http://localhost:18443 \
     {{service_name}}
