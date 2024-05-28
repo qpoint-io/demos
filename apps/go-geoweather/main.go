@@ -4,19 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
+	"strings"
 )
-
-type IPResponse struct {
-	Origin string `json:"origin"`
-}
 
 type LocationResponse struct {
 	City        string  `json:"city"`
 	CountryName string  `json:"country_name"`
-	Latitude    float64 `json:"lat"`
-	Longitude   float64 `json:"lon"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
 }
 
 type WeatherResponse struct {
@@ -26,22 +24,22 @@ type WeatherResponse struct {
 }
 
 func getPublicIP() (string, error) {
-	resp, err := http.Get("https://httpbin.org/ip")
+	resp, err := http.Get("https://icanhazip.com")
 	if err != nil {
 		return "", fmt.Errorf("unable to get public IP: %v", err)
 	}
 	defer resp.Body.Close()
 
-	var ipResp IPResponse
-	if err := json.NewDecoder(resp.Body).Decode(&ipResp); err != nil {
-		return "", fmt.Errorf("unable to parse IP response: %v", err)
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("reading response body: %w", err)
 	}
 
-	return ipResp.Origin, nil
+	return strings.TrimSpace(string(b)), nil
 }
 
 func getLocation(ip string) (LocationResponse, error) {
-	url := fmt.Sprintf("http://ip-api.com/json/%s", ip)
+	url := fmt.Sprintf("https://ipwho.is/%s?fields=country,city,latitude,longitude", ip)
 	resp, err := http.Get(url)
 	if err != nil {
 		return LocationResponse{}, fmt.Errorf("unable to get location: %v", err)

@@ -1,31 +1,49 @@
 from flask import Flask, request, render_template_string
-import httpx
+import requests
 import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-
-async def get_public_ip():
+def get_public_ip():
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get('https://httpbin.org/ip')
-            return response.json()['origin']
-    except Exception as e:
-        return "Unable to get public IP: " + str(e)
+        response = requests.get('https://icanhazip.com')
+        response.raise_for_status()  # Will raise an HTTPError for bad responses
+        return response.text.strip()
+    except requests.HTTPError as http_err:
+        logging.error(f'HTTP error occurred: {http_err}')  # HTTP error
+        return f"Unable to get public IP: HTTP error occurred: {http_err}"
+    except Exception as err:
+        logging.error(f'Other error occurred: {err}')  # Other errors
+        return f"Unable to get public IP: Other error occurred: {err}"
 
-async def get_location(ip):
-    url = f"http://ip-api.com/json/{ip}"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+def get_location(ip):
+    url = f"https://ipwho.is/{ip}?fields=country,city,latitude,longitude"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
         return response.json()
+    except requests.HTTPError as http_err:
+        logging.error(f'HTTP error occurred while fetching location: {http_err}')
+        return {'error': f"HTTP error occurred: {http_err}"}
+    except Exception as err:
+        logging.error(f'Error fetching location: {err}')
+        return {'error': f"Other error occurred: {err}"}
 
-async def get_weather(lat, lon):
+def get_weather(lat, lon):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m&forecast_days=1"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
         return response.json()
+    except requests.HTTPError as http_err:
+        logging.error(f'HTTP error occurred while fetching weather: {http_err}')
+        return {'error': f"HTTP error occurred: {http_err}"}
+    except Exception as err:
+        logging.error(f'Error fetching weather: {err}')
+        return {'error': f"Other error occurred: {err}"}
 
 @app.route('/')
 def index():
@@ -38,7 +56,7 @@ def index():
     </head>
     <body>
         <h1>Welcome to the GeoWeather App (Python)</h1>
-        <form action="/weather" method="POST">
+        <form action="/weather" method="post">
             <button type="submit">Get My Weather</button>
         </form>
     </body>
@@ -47,39 +65,35 @@ def index():
     return render_template_string(html)
 
 @app.route('/weather', methods=['POST'])
-async def weather():
-    logging.debug("Starting weather function")
+def weather():
+    public_ip = get_public_ip()
 
-    public_ip = await get_public_ip()
-    logging.debug(f"Public IP fetched: {public_ip}")
+    if "Unable to get public IP" in public_ip:
+        return f"<p>Error: {public_ip}</p>"
 
-    location = await get_location(public_ip)
-    logging.debug(f"Location fetched for IP {public_ip}: {location}")
+    location = get_location(public_ip)
+    if 'error' in location:
+        return f"<p>Error fetching location data for IP {public_ip}: {location['error']}</p>"
 
-    if 'lat' in location and 'lon' in location:
-        weather = await get_weather(location['lat'], location['lon'])
-        logging.debug(f"Weather fetched for location {location['lat']}, {location['lon']}: {weather}")
+    weather = get_weather(location['latitude'], location['longitude'])
+    if 'error' in weather:
+        return f"<p>Error fetching weather data: {weather['error']}</p>"
 
-        weather_html = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Weather Result</title>
-        </head>
-        <body>
-            <h1>Weather for {location['city']}, {location['country']} (Python)</h1>
-            <p>Temperature: {weather['current']['temperature_2m']}°C</p>
-            <a href="/">Back to home</a>
-        </body>
-        </html>
-        """
-        return render_template_string(weather_html)
-    else:
-        logging.error(f"Error fetching location data for IP: {public_ip}")
-        return f"Error fetching location data for IP"
+    weather_html = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Weather Result</title>
+    </head>
+    <body>
+        <h1>Weather for {location['city']}, {location['country']}</h1>
+        <p>Temperature: {weather['current']['temperature_2m']}°C</p>
+        <a href="/">Back to home</a>
+    </body>
+    </html>
+    """
+    return render_template_string(weather_html)
 
 if __name__ == "__main__":
-    import asyncio
     app.run(host='0.0.0.0', port=4000)
-

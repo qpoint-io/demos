@@ -3,11 +3,12 @@
 # Function to get public IP
 get_public_ip() {
     local ip
-    ip=$(curl -s https://httpbin.org/ip | jq -r .origin)
+    ip=$(curl -s icanhazip.com)
     if [ -z "$ip" ]; then
         echo "Unable to get public IP"
         exit 1
     fi
+
     echo "$ip"
 }
 
@@ -15,7 +16,7 @@ get_public_ip() {
 get_location() {
     local ip="$1"
     local location
-    location=$(curl -s "http://ip-api.com/json/{$ip}")
+    location=$(curl -s "https://ipwho.is/{$ip}?fields=country,city,latitude,longitude")
     if [ -z "$location" ]; then
         echo "Unable to get location"
         exit 1
@@ -50,8 +51,8 @@ main() {
     local city country latitude longitude
     city=$(echo "$location" | jq -r .city)
     country=$(echo "$location" | jq -r .country)
-    latitude=$(echo "$location" | jq -r .lat)
-    longitude=$(echo "$location" | jq -r .lon)
+    latitude=$(echo "$location" | jq -r .latitude)
+    longitude=$(echo "$location" | jq -r .longitude)
     echo -e "\n2. Location fetched for IP $public_ip:\n\t$city, $country\n\t($latitude, $longitude)"
 
     if [ -z "$latitude" ] || [ -z "$longitude" ]; then

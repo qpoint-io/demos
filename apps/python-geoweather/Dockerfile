@@ -1,15 +1,13 @@
 # Use an official Python runtime as a parent image
-FROM python:3.12-slim
+FROM python:3.12-alpine
 
 # Get latest CA's
 ARG TOKEN
-RUN apt-get update && \
-    apt-get install -y curl ca-certificates && \
+RUN apk --no-cache add curl ca-certificates && \
     if [ -n "$TOKEN" ]; then \
         curl -s https://api.qpoint.io/deploy/certificate -H "Authorization: Bearer $TOKEN" > /usr/local/share/ca-certificates/qpoint-ca.crt && \
         update-ca-certificates; \
-    fi && \
-    rm -rf /var/lib/apt/lists/*
+    fi
 
 # Set the working directory to /app
 WORKDIR /app
@@ -18,7 +16,7 @@ WORKDIR /app
 COPY . .
 
 # Install any needed packages specified in requirements.txt
-RUN pip install Flask[async] requests httpx h2
+RUN pip install flask requests
 
 # Make port 4000 available to the world outside this container
 EXPOSE 4000
