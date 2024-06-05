@@ -3,7 +3,7 @@
 # Function to get public IP
 get_public_ip() {
     local ip
-    ip=$(curl -s icanhazip.com)
+    ip=$(curl -s https://icanhazip.com)
     if [ -z "$ip" ]; then
         echo "Unable to get public IP"
         exit 1
