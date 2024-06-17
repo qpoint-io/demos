@@ -42,15 +42,12 @@ ensure-images: docker ## Ensure all app images exist, build them if not
 		fi; \
 	done
 
-build-node: docker ## Build the docker node image used to bootstrap KinD cluster
-	docker build -t demo-kind-node:latest .
-
 build: build-images ## Build the necessary resources for the environment
 
 ##@ Environment
 
 cluster: kind ## Create the KinD cluster to run demo scenarios
-	@$(KIND) get clusters | grep -qw "^demo$$" || $(KIND) create cluster --config kind-config.yaml --name demo
+	@$(KIND) get clusters | grep -qw "^demo$$" || $(KIND) create cluster --config kind-config.yaml --image kindest/node:v1.29.4 --name demo
 
 cert-manager: ## Install cert-manager on the KinD cluster
 	@echo "Installing cert-manager..." && \
