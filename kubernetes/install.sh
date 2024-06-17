@@ -43,7 +43,24 @@ case "$os" in
     ;;
 esac
 
-# install kubectl
+install_jq() {
+  echo "Installing jq..."
+
+  # return early if already exists
+  if [ -f "bin/jq" ]; then
+    return 0
+  fi
+
+  # ensure bin dir
+  mkdir -p bin
+
+   # install
+  curl -Lo bin/jq "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-${alt_platform}-${architecture}"
+
+  # ensure executable
+  chmod +x bin/jq
+}
+
 install_kubectl() {
   echo "Installing kubectl..."
 
@@ -105,30 +122,17 @@ install_helm() {
   chmod +x bin/helm
 }
 
-install_jq() {
-  echo "Installing jq..."
-
-  # return early if already exists
-  if [ -f "bin/jq" ]; then
-    return 0
-  fi
-
-  # ensure bin dir
-  mkdir -p bin
-
-   # install
-  curl -Lo bin/jq "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-${alt_platform}-${architecture}"
-
-  # ensure executable
-  chmod +x bin/jq
-}
-
 # extract the requested utility
 utility="$1"
 
 # assume all if not specified
 if [ "$utility" = "" ]; then
   utility="all"
+fi
+
+# jq
+if [ "$utility" = "jq" ] || [ "$utility" = "all" ]; then
+  install_jq
 fi
 
 # kubectl
@@ -144,9 +148,4 @@ fi
 # helm
 if [ "$utility" = "helm" ] || [ "$utility" = "all" ]; then
   install_helm
-fi
-
-# helm
-if [ "$utility" = "jq" ] || [ "$utility" = "all" ]; then
-  install_jq
 fi

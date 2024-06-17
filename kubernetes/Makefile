@@ -240,7 +240,7 @@ $(JQ): $(LOCALBIN)
 install: # Install all necessary dependencies
 	@./install.sh
 
-ensure-deps: docker kubectl kind helm jq ## Ensure all dependencies are ready
+ensure-deps: docker jq kubectl kind helm ## Ensure all dependencies are ready
 
 qtap-gateway-tunnel: ## Starts up a local Qtap Proxy Tunnel on 10080 and 10443
 	docker run -p 10080:10080 -p 10443:10443 us-docker.pkg.dev/qpoint-edge/public/qtap:branch-multi-runner-docker-builds \
