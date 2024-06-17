@@ -213,13 +213,17 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 # Binaries
+JQ ?= $(LOCALBIN)/jq
 KUBECTL ?= $(LOCALBIN)/kubectl
 KIND ?= $(LOCALBIN)/kind
 HELM ?= $(LOCALBIN)/helm
-JQ ?= $(LOCALBIN)/helm
 
 docker: ## Ensure docker is installed and running
 	@docker info > /dev/null 2>&1 || (echo "Error: Docker must be installed and running" && exit 1 )
+
+jq: $(JQ) ## Ensure jq is installed
+$(JQ): $(LOCALBIN)
+	@test -s $(LOCALBIN)/jq || ./install.sh jq
 
 kubectl: $(KUBECTL) ## Ensure kubectl is installed
 $(KUBECTL): $(LOCALBIN)
@@ -232,10 +236,6 @@ $(KIND): $(LOCALBIN)
 helm: $(HELM) ## Ensure helm is installed
 $(HELM): $(LOCALBIN)
 	@test -s $(LOCALBIN)/helm || ./install.sh helm
-
-jq: $(JQ) ## Ensure helm is installed
-$(JQ): $(LOCALBIN)
-	@test -s $(LOCALBIN)/jq || ./install.sh jq
 
 install: # Install all necessary dependencies
 	@./install.sh
