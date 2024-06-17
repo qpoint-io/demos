@@ -139,9 +139,9 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 ##@ Apps
 
 %-app: ensure-deps cluster cert-manager ## Pattern rule for applications
-	@$(MAKE) ensure-image APP=$* 
-	@$(MAKE) ensure-namespace APP=$* 
-	@$(MAKE) upload-image APP=$* 
+	@$(MAKE) ensure-image APP=$*
+	@$(MAKE) ensure-namespace APP=$*
+	@$(MAKE) upload-image APP=$*
 	apps/$*/init.sh apps/$*
 
 list-apps:
@@ -216,6 +216,7 @@ $(LOCALBIN):
 KUBECTL ?= $(LOCALBIN)/kubectl
 KIND ?= $(LOCALBIN)/kind
 HELM ?= $(LOCALBIN)/helm
+JQ ?= $(LOCALBIN)/helm
 
 docker: ## Ensure docker is installed and running
 	@docker info > /dev/null 2>&1 || (echo "Error: Docker must be installed and running" && exit 1 )
@@ -232,10 +233,14 @@ helm: $(HELM) ## Ensure helm is installed
 $(HELM): $(LOCALBIN)
 	@test -s $(LOCALBIN)/helm || ./install.sh helm
 
+jq: $(JQ) ## Ensure helm is installed
+$(JQ): $(LOCALBIN)
+	@test -s $(LOCALBIN)/jq || ./install.sh jq
+
 install: # Install all necessary dependencies
 	@./install.sh
 
-ensure-deps: docker kubectl kind helm ## Ensure all dependencies are ready
+ensure-deps: docker kubectl kind helm jq ## Ensure all dependencies are ready
 
 qtap-gateway-tunnel: ## Starts up a local Qtap Proxy Tunnel on 10080 and 10443
 	docker run -p 10080:10080 -p 10443:10443 us-docker.pkg.dev/qpoint-edge/public/qtap:branch-multi-runner-docker-builds \

@@ -9,6 +9,9 @@ machine=$(uname -m)
 # the OS platform (linux|mac|windows)
 platform="unknown"
 
+# the OS platform's alternative name (macos) or the same as platform if no alternative exists
+alt_platform="unknown"
+
 # the chipset architecture (amd64|arm64)
 architecture="unknown"
 
@@ -16,6 +19,7 @@ architecture="unknown"
 case "$os" in
   Linux)
     platform="linux"
+    alt_platform="linux"
     case "$machine" in
       x86_64) architecture="amd64" ;;
       arm64 | aarch64) architecture="arm64" ;;
@@ -23,6 +27,7 @@ case "$os" in
     ;;
   Darwin)
     platform="darwin"
+    alt_platform="macos"
     case "$machine" in
       x86_64) architecture="amd64" ;;
       arm64) architecture="arm64" ;;
@@ -30,6 +35,7 @@ case "$os" in
     ;;
   MINGW* | CYGWIN* | MSYS*)
     platform="windows"
+    alt_platform="windows"
     case "$machine" in
       x86_64) architecture="amd64" ;;
       ARM64) architecture="arm64" ;;
@@ -70,8 +76,11 @@ install_kind() {
   # ensure bin dir
   mkdir -p bin
 
+# grab latest stable version
+  version=$(curl --silent "https://api.github.com/repos/kubernetes-sigs/kind/releases/latest" | jq -r '.tag_name')
+
   # install
-  curl -Lo bin/kind "https://kind.sigs.k8s.io/dl/v0.20.0/kind-${platform}-${architecture}"
+  curl -Lo bin/kind "https://kind.sigs.k8s.io/dl/${version}/kind-${platform}-${architecture}"
 
   # ensure executable
   chmod +x bin/kind
@@ -96,6 +105,24 @@ install_helm() {
   chmod +x bin/helm
 }
 
+install_jq() {
+  echo "Installing jq..."
+
+  # return early if already exists
+  if [ -f "bin/jq" ]; then
+    return 0
+  fi
+
+  # ensure bin dir
+  mkdir -p bin
+
+   # install
+  curl -Lo bin/jq "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-${alt_platform}-${architecture}"
+
+  # ensure executable
+  chmod +x bin/jq
+}
+
 # extract the requested utility
 utility="$1"
 
@@ -117,4 +144,9 @@ fi
 # helm
 if [ "$utility" = "helm" ] || [ "$utility" = "all" ]; then
   install_helm
+fi
+
+# helm
+if [ "$utility" = "jq" ] || [ "$utility" = "all" ]; then
+  install_jq
 fi
