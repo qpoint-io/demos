@@ -11,19 +11,51 @@ done
 # Function to get public IP
 get_public_ip() {
     local ip
+    local response
+    local status_code
+    local curl_command
+
+    # Check for HTTPS_PROXY environment variable
+    if [ -n "$HTTPS_PROXY" ]; then
+        echo "✓ HTTPS Proxy detected" >&2
+    else
+        echo "✗ No HTTPS Proxy detected" >&2
+    fi
+
     if [ "$1" == "--ratelimit" ]; then
         # Simulate rate limiting
-        local status
-        status=$(curl -s -k -o /dev/null -w "%{http_code}" -X GET "https://httpbin.org/status/200%2C%20429" -H "accept: text/plain")
-        if [ "$status" == "429" ]; then
-            echo "Error: Public IP Unfetchable" >&2
-            return 1  # Changed from exit to return to allow the main function to handle the exit
+        curl_command="curl -s -k -o /dev/null -w '%{http_code}' -X GET 'https://httpbin.org/status/200%2C%20429' -H 'accept: text/plain'"
+        
+        response=$(eval "$curl_command")
+        status_code=$response
+        
+        echo "Status code: $status_code" >&2
+        
+        if [ "$status_code" == "429" ]; then
+            echo "Error: Public IP Unfetchable (Rate limited)" >&2
+            return 1
         fi
         # Assume IP when 200 received
         ip="24.23.180.98"
     else
         # Regular IP fetch
-        ip=$(curl -s -k -X GET "https://httpbin.org/ip" -H "accept: application/json" | jq -r .origin)
+        curl_command="curl -s -k -X GET 'https://httpbin.org/ip' -H 'accept: application/json'"
+        
+        response=$(eval "$curl_command")
+        status_code=$(echo "$response" | jq -r '.status // "200"')
+        
+        echo "Status code: $status_code" >&2
+        
+        # Extract IP(s) from the response
+        ip=$(echo "$response" | jq -r .origin)
+        
+        # Check if multiple IPs are present
+        if [[ $ip == *","* ]]; then
+            # Split the IP string and take the second IP
+            ip=$(echo "$ip" | awk -F', ' '{print $2}')
+            echo "Multiple IPs detected. Using: $ip" >&2
+        fi
+
         if [ -z "$ip" ]; then
             echo "Unable to get public IP" >&2
             return 1
@@ -99,15 +131,16 @@ get_sunrise_sunset() {
 # Main function to fetch and display information
 main() {
     local ratelimit_flag=$1
-    echo "Starting location information function"
+    echo "📍 Location Information"
+    echo "----------------------"
 
     local public_ip
     public_ip=$(get_public_ip "$ratelimit_flag")
     if [ $? -ne 0 ]; then
-        echo -e "\n1. Public IP fetched: $public_ip"
+        echo -e "\n🌐 Public IP: $public_ip"
         exit 1
     fi
-    echo -e "\n1. Public IP fetched: $public_ip"
+    echo -e "\n🌐 Public IP: $public_ip"
 
     local location
     location=$(get_location "$public_ip")
@@ -118,7 +151,8 @@ main() {
     country=$(echo "$location" | jq -r .country)
     latitude=$(echo "$location" | jq -r .latitude)
     longitude=$(echo "$location" | jq -r .longitude)
-    echo -e "\n2. Location fetched for IP $public_ip:\n\t$city, $country\n\t($latitude, $longitude)"
+    echo -e "📌 Location: $city, $country"
+    echo -e "   Coordinates: ($latitude, $longitude)"
 
     local weather
     weather=$(get_weather "$latitude" "$longitude")
@@ -126,8 +160,8 @@ main() {
     local temperature
     temperature=$(echo "$weather" | jq -r .current_weather.temperature)
 
-    echo -e "\n3. Weather for $city, $country"
-    echo -e "\tTemperature: ${temperature}°C"
+    echo -e "\n🌡️  Weather"
+    echo -e "   Temperature: ${temperature}°C"
 
     local timezone
     timezone=$(get_timezone "$latitude" "$longitude")
@@ -135,8 +169,7 @@ main() {
     local local_time
     local_time=$(echo "$timezone" | jq -r .datetime)
 
-    echo -e "\n4. Local Time for $city, $country"
-    echo -e "\tLocal Time: ${local_time}"
+    echo -e "\n🕰️  Local Time: ${local_time}"
 
     local air_quality
     air_quality=$(get_air_quality "$latitude" "$longitude")
@@ -144,8 +177,8 @@ main() {
     local aqi
     aqi=$(echo "$air_quality" | jq -r .data.aqi)
 
-    echo -e "\n5. Air Quality for $city, $country"
-    echo -e "\tAQI: ${aqi}"
+    echo -e "\n💨 Air Quality"
+    echo -e "   AQI: ${aqi}"
 
     local sunrise_sunset
     sunrise_sunset=$(get_sunrise_sunset "$latitude" "$longitude")
@@ -155,7 +188,9 @@ main() {
     local sunset
     sunset=$(echo "$sunrise_sunset" | jq -r .results.sunset)
 
-    echo -e "\n6. Sunrise and Sunset times:\n\tSunrise: $sunrise\n\tSunset: $sunset"
+    echo -e "\n🌅 Sun Times"
+    echo -e "   Sunrise: $sunrise"
+    echo -e "   Sunset:  $sunset"
 }
 
 main "$@"
