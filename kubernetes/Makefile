@@ -42,15 +42,12 @@ ensure-images: docker ## Ensure all app images exist, build them if not
 		fi; \
 	done
 
-build-node: docker ## Build the docker node image used to bootstrap KinD cluster
-	docker build -t demo-kind-node:latest .
-
 build: build-images ## Build the necessary resources for the environment
 
 ##@ Environment
 
 cluster: kind ## Create the KinD cluster to run demo scenarios
-	@$(KIND) get clusters | grep -qw "^demo$$" || $(KIND) create cluster --config kind-config.yaml --name demo
+	@$(KIND) get clusters | grep -qw "^demo$$" || $(KIND) create cluster --config kind-config.yaml --image kindest/node:v1.29.4 --name demo
 
 cert-manager: ## Install cert-manager on the KinD cluster
 	@echo "Installing cert-manager..." && \
@@ -139,9 +136,9 @@ qpoint: ensure-deps ## Install qpoint gateway & operator
 ##@ Apps
 
 %-app: ensure-deps cluster cert-manager ## Pattern rule for applications
-	@$(MAKE) ensure-image APP=$* 
-	@$(MAKE) ensure-namespace APP=$* 
-	@$(MAKE) upload-image APP=$* 
+	@$(MAKE) ensure-image APP=$*
+	@$(MAKE) ensure-namespace APP=$*
+	@$(MAKE) upload-image APP=$*
 	apps/$*/init.sh apps/$*
 
 list-apps:
@@ -213,12 +210,17 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 # Binaries
+JQ ?= $(LOCALBIN)/jq
 KUBECTL ?= $(LOCALBIN)/kubectl
 KIND ?= $(LOCALBIN)/kind
 HELM ?= $(LOCALBIN)/helm
 
 docker: ## Ensure docker is installed and running
 	@docker info > /dev/null 2>&1 || (echo "Error: Docker must be installed and running" && exit 1 )
+
+jq: $(JQ) ## Ensure jq is installed
+$(JQ): $(LOCALBIN)
+	@test -s $(LOCALBIN)/jq || ./install.sh jq
 
 kubectl: $(KUBECTL) ## Ensure kubectl is installed
 $(KUBECTL): $(LOCALBIN)
@@ -235,7 +237,7 @@ $(HELM): $(LOCALBIN)
 install: # Install all necessary dependencies
 	@./install.sh
 
-ensure-deps: docker kubectl kind helm ## Ensure all dependencies are ready
+ensure-deps: docker jq kubectl kind helm ## Ensure all dependencies are ready
 
 qtap-gateway-tunnel: ## Starts up a local Qtap Proxy Tunnel on 10080 and 10443
 	docker run -p 10080:10080 -p 10443:10443 us-docker.pkg.dev/qpoint-edge/public/qtap:branch-multi-runner-docker-builds \
