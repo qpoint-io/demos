@@ -147,11 +147,6 @@ get_sunrise_sunset() {
 }
 
 # Main function to fetch and display information
-#!/usr/bin/env bash
-
-# ... (previous functions remain the same)
-
-# Main function to fetch and display information
 main() {
     local ratelimit_flag=$1
     echo "📍 Location Information"
