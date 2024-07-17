@@ -82,7 +82,12 @@ get_location() {
     
     # Check if the response contains an error message
     if [ "$(echo "$location" | jq -r '.success // true')" == "false" ]; then
-        echo "Error from location API: $(echo "$location" | jq -r '.message // "Unknown error"')" >&2
+        local error_message=$(echo "$location" | jq -r '.message // "Unknown error"')
+        echo "Error from location API: $error_message" >&2
+        # Return a specific exit code for rate limiting
+        if [[ "$error_message" == *"monthly limit"* ]]; then
+            return 2
+        fi
         return 1
     fi
     
@@ -142,6 +147,11 @@ get_sunrise_sunset() {
 }
 
 # Main function to fetch and display information
+#!/usr/bin/env bash
+
+# ... (previous functions remain the same)
+
+# Main function to fetch and display information
 main() {
     local ratelimit_flag=$1
     echo "📍 Location Information"
@@ -157,50 +167,67 @@ main() {
 
     local location
     location=$(get_location "$public_ip")
-    if [ $? -ne 0 ]; then exit 1; fi
-
+    local location_status=$?
+    
     echo "Debug: Location API response: $location" >&2
+    
+    if [ $location_status -ne 0 ] || [ "$(echo "$location" | jq -r '.success')" == "false" ]; then
+        echo "The location API (ipwho.is) returned an error or hit rate limit." >&2
+        echo "Defaulting to San Francisco, California coordinates." >&2
+        city="San Francisco"
+        country="United States"
+        latitude="37.7749"
+        longitude="-122.4194"
+    else
+        city=$(echo "$location" | jq -r '.city // "Unknown"')
+        country=$(echo "$location" | jq -r '.country // "Unknown"')
+        latitude=$(echo "$location" | jq -r '.latitude // "Unknown"')
+        longitude=$(echo "$location" | jq -r '.longitude // "Unknown"')
+    fi
 
-    local city country latitude longitude
-    city=$(echo "$location" | jq -r '.city // "Unknown"')
-    country=$(echo "$location" | jq -r '.country // "Unknown"')
-    latitude=$(echo "$location" | jq -r '.latitude // "Unknown"')
-    longitude=$(echo "$location" | jq -r '.longitude // "Unknown"')
     echo -e "📌 Location: $city, $country"
     echo -e "   Coordinates: ($latitude, $longitude)"
 
-    if [ "$latitude" == "Unknown" ] || [ "$longitude" == "Unknown" ]; then
-        echo "Unable to get weather due to missing location data" >&2
+    local weather
+    weather=$(get_weather "$latitude" "$longitude")
+    if [ $? -ne 0 ]; then 
+        echo "Unable to get weather data" >&2
     else
-        local weather
-        weather=$(get_weather "$latitude" "$longitude")
-        if [ $? -ne 0 ]; then exit 1; fi
         local temperature
         temperature=$(echo "$weather" | jq -r '.current_weather.temperature // "Unknown"')
 
         echo -e "\n🌡️  Weather"
         echo -e "   Temperature: ${temperature}°C"
+    fi
 
-        local timezone
-        timezone=$(get_timezone "$latitude" "$longitude")
-        if [ $? -ne 0 ]; then exit 1; fi
+    local timezone
+    timezone=$(get_timezone "$latitude" "$longitude")
+    if [ $? -ne 0 ]; then 
+        echo "Unable to get timezone data" >&2
+    else
         local local_time
         local_time=$(echo "$timezone" | jq -r '.datetime // "Unknown"')
 
         echo -e "\n🕰️  Local Time: ${local_time}"
+    fi
 
-        local air_quality
-        air_quality=$(get_air_quality "$latitude" "$longitude")
-        if [ $? -ne 0 ]; then exit 1; fi
+    local air_quality
+    air_quality=$(get_air_quality "$latitude" "$longitude")
+    if [ $? -ne 0 ]; then 
+        echo "Unable to get air quality data" >&2
+    else
         local aqi
         aqi=$(echo "$air_quality" | jq -r '.data.aqi // "Unknown"')
 
         echo -e "\n💨 Air Quality"
         echo -e "   AQI: ${aqi}"
+    fi
 
-        local sunrise_sunset
-        sunrise_sunset=$(get_sunrise_sunset "$latitude" "$longitude")
-        if [ $? -ne 0 ]; then exit 1; fi
+    local sunrise_sunset
+    sunrise_sunset=$(get_sunrise_sunset "$latitude" "$longitude")
+    if [ $? -ne 0 ]; then 
+        echo "Unable to get sunrise and sunset data" >&2
+    else
         local sunrise
         sunrise=$(echo "$sunrise_sunset" | jq -r '.results.sunrise // "Unknown"')
         local sunset
