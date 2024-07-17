@@ -25,12 +25,12 @@ get_public_ip() {
     if [ "$1" == "--ratelimit" ]; then
         # Simulate rate limiting
         curl_command="curl -s -k -o /dev/null -w '%{http_code}' -X GET 'https://httpbin.org/status/200%2C%20429' -H 'accept: text/plain'"
-        
+
         response=$(eval "$curl_command")
         status_code=$response
-        
+
         echo "Status code: $status_code" >&2
-        
+
         if [ "$status_code" == "429" ]; then
             echo "Error: Public IP Unfetchable (Rate limited)" >&2
             return 1
@@ -40,15 +40,15 @@ get_public_ip() {
     else
         # Regular IP fetch
         curl_command="curl -s -k -X GET 'https://httpbin.org/ip' -H 'accept: application/json'"
-        
+
         response=$(eval "$curl_command")
         status_code=$(echo "$response" | jq -r '.status // "200"')
-        
+
         echo "Status code: $status_code" >&2
-        
+
         # Extract IP(s) from the response
         ip=$(echo "$response" | jq -r .origin)
-        
+
         # Check if multiple IPs are present
         if [[ $ip == *","* ]]; then
             # Split the IP string and take the second IP
@@ -68,11 +68,24 @@ get_public_ip() {
 get_location() {
     local ip="$1"
     local location
-    location=$(curl -s -k "https://ipwho.is/${ip}?fields=country,city,latitude,longitude,country_code")
-    if [ -z "$location" ] || [ "$(echo "$location" | jq -r '.success')" == "false" ]; then
+    location=$(curl -s -k "https://ipwho.is/${ip}")
+    if [ -z "$location" ]; then
         echo "Unable to get location" >&2
-        exit 1
+        return 1
     fi
+    
+    # Check if the response is valid JSON
+    if ! echo "$location" | jq empty; then
+        echo "Invalid JSON response from location API" >&2
+        return 1
+    fi
+    
+    # Check if the response contains an error message
+    if [ "$(echo "$location" | jq -r '.success // true')" == "false" ]; then
+        echo "Error from location API: $(echo "$location" | jq -r '.message // "Unknown error"')" >&2
+        return 1
+    fi
+    
     echo "$location"
 }
 
@@ -82,9 +95,9 @@ get_weather() {
     local lon="$2"
     local weather
     weather=$(curl -s -k "https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true")
-    if [ -z "$weather" ] || [ "$(echo "$weather" | jq -r '.current_weather')" == "null" ]; then
+    if [ -z "$weather" ] || [ "$(echo "$weather" | jq -r '.current_weather // null')" == "null" ]; then
         echo "Unable to get weather" >&2
-        exit 1
+        return 1
     fi
     echo "$weather"
 }
@@ -97,7 +110,7 @@ get_timezone() {
     timezone=$(curl -s -k "http://worldtimeapi.org/api/timezone/Etc/GMT")
     if [ -z "$timezone" ]; then
         echo "Unable to get time zone" >&2
-        exit 1
+        return 1
     fi
     echo "$timezone"
 }
@@ -108,9 +121,9 @@ get_air_quality() {
     local lon="$2"
     local air_quality
     air_quality=$(curl -s -k "https://api.waqi.info/feed/geo:${lat};${lon}/?token=demo")
-    if [ -z "$air_quality" ] || [ "$(echo "$air_quality" | jq -r '.status')" != "ok" ]; then
+    if [ -z "$air_quality" ] || [ "$(echo "$air_quality" | jq -r '.status // "error"')" != "ok" ]; then
         echo "Unable to get air quality" >&2
-        exit 1
+        return 1
     fi
     echo "$air_quality"
 }
@@ -121,9 +134,9 @@ get_sunrise_sunset() {
     local lon="$2"
     local sunrise_sunset
     sunrise_sunset=$(curl -s -k "https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0")
-    if [ -z "$sunrise_sunset" ] || [ "$(echo "$sunrise_sunset" | jq -r '.status')" != "OK" ]; then
+    if [ -z "$sunrise_sunset" ] || [ "$(echo "$sunrise_sunset" | jq -r '.status // "ERROR"')" != "OK" ]; then
         echo "Unable to get sunrise and sunset times" >&2
-        exit 1
+        return 1
     fi
     echo "$sunrise_sunset"
 }
@@ -146,51 +159,57 @@ main() {
     location=$(get_location "$public_ip")
     if [ $? -ne 0 ]; then exit 1; fi
 
+    echo "Debug: Location API response: $location" >&2
+
     local city country latitude longitude
-    city=$(echo "$location" | jq -r .city)
-    country=$(echo "$location" | jq -r .country)
-    latitude=$(echo "$location" | jq -r .latitude)
-    longitude=$(echo "$location" | jq -r .longitude)
+    city=$(echo "$location" | jq -r '.city // "Unknown"')
+    country=$(echo "$location" | jq -r '.country // "Unknown"')
+    latitude=$(echo "$location" | jq -r '.latitude // "Unknown"')
+    longitude=$(echo "$location" | jq -r '.longitude // "Unknown"')
     echo -e "📌 Location: $city, $country"
     echo -e "   Coordinates: ($latitude, $longitude)"
 
-    local weather
-    weather=$(get_weather "$latitude" "$longitude")
-    if [ $? -ne 0 ]; then exit 1; fi
-    local temperature
-    temperature=$(echo "$weather" | jq -r .current_weather.temperature)
+    if [ "$latitude" == "Unknown" ] || [ "$longitude" == "Unknown" ]; then
+        echo "Unable to get weather due to missing location data" >&2
+    else
+        local weather
+        weather=$(get_weather "$latitude" "$longitude")
+        if [ $? -ne 0 ]; then exit 1; fi
+        local temperature
+        temperature=$(echo "$weather" | jq -r '.current_weather.temperature // "Unknown"')
 
-    echo -e "\n🌡️  Weather"
-    echo -e "   Temperature: ${temperature}°C"
+        echo -e "\n🌡️  Weather"
+        echo -e "   Temperature: ${temperature}°C"
 
-    local timezone
-    timezone=$(get_timezone "$latitude" "$longitude")
-    if [ $? -ne 0 ]; then exit 1; fi
-    local local_time
-    local_time=$(echo "$timezone" | jq -r .datetime)
+        local timezone
+        timezone=$(get_timezone "$latitude" "$longitude")
+        if [ $? -ne 0 ]; then exit 1; fi
+        local local_time
+        local_time=$(echo "$timezone" | jq -r '.datetime // "Unknown"')
 
-    echo -e "\n🕰️  Local Time: ${local_time}"
+        echo -e "\n🕰️  Local Time: ${local_time}"
 
-    local air_quality
-    air_quality=$(get_air_quality "$latitude" "$longitude")
-    if [ $? -ne 0 ]; then exit 1; fi
-    local aqi
-    aqi=$(echo "$air_quality" | jq -r .data.aqi)
+        local air_quality
+        air_quality=$(get_air_quality "$latitude" "$longitude")
+        if [ $? -ne 0 ]; then exit 1; fi
+        local aqi
+        aqi=$(echo "$air_quality" | jq -r '.data.aqi // "Unknown"')
 
-    echo -e "\n💨 Air Quality"
-    echo -e "   AQI: ${aqi}"
+        echo -e "\n💨 Air Quality"
+        echo -e "   AQI: ${aqi}"
 
-    local sunrise_sunset
-    sunrise_sunset=$(get_sunrise_sunset "$latitude" "$longitude")
-    if [ $? -ne 0 ]; then exit 1; fi
-    local sunrise
-    sunrise=$(echo "$sunrise_sunset" | jq -r .results.sunrise)
-    local sunset
-    sunset=$(echo "$sunrise_sunset" | jq -r .results.sunset)
+        local sunrise_sunset
+        sunrise_sunset=$(get_sunrise_sunset "$latitude" "$longitude")
+        if [ $? -ne 0 ]; then exit 1; fi
+        local sunrise
+        sunrise=$(echo "$sunrise_sunset" | jq -r '.results.sunrise // "Unknown"')
+        local sunset
+        sunset=$(echo "$sunrise_sunset" | jq -r '.results.sunset // "Unknown"')
 
-    echo -e "\n🌅 Sun Times"
-    echo -e "   Sunrise: $sunrise"
-    echo -e "   Sunset:  $sunset"
+        echo -e "\n🌅 Sun Times"
+        echo -e "   Sunrise: $sunrise"
+        echo -e "   Sunset:  $sunset"
+    fi
 }
 
 main "$@"
