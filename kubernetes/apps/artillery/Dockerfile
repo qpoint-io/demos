@@ -1,5 +1,5 @@
 # Use the official Node.js runtime as a base image
-FROM node:14-slim
+FROM node:18-slim
 
 # Update the system and install necessary tools
 RUN apt-get update
