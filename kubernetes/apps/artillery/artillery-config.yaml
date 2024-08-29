@@ -1,5 +1,5 @@
 config:
-  target: 'http://qpoint.com' # Base URL for QPoint to intercept and manage traffic
+  target: 'https://qpoint.io' # Base URL for QPoint to intercept and manage traffic
   phases:
     - duration: 600 # Duration of the test in seconds
       arrivalRate: 5 # New virtual users per second
